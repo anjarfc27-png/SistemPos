@@ -141,34 +141,34 @@ export const ReportsPage = () => {
           </div>
 
           {/* Summary Stats */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 animate-scale-in">
-              <CardContent className="pt-6">
+              <CardContent className="pt-4 sm:pt-6 pb-4 sm:pb-6 px-4 sm:px-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <DollarSign className="h-6 w-6 text-white" />
+                  <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <p className="text-sm text-white/80">Total Revenue</p>
-                <p className="text-2xl font-bold text-white mt-1">{formatPrice(summary.total)}</p>
+                <p className="text-xs sm:text-sm text-white/80">Total Revenue</p>
+                <p className="text-lg sm:text-2xl font-bold text-white mt-1 truncate">{formatPrice(summary.total)}</p>
               </CardContent>
             </Card>
 
             <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-pink-600 animate-scale-in" style={{ animationDelay: '100ms' }}>
-              <CardContent className="pt-6">
+              <CardContent className="pt-4 sm:pt-6 pb-4 sm:pb-6 px-4 sm:px-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <ShoppingCart className="h-6 w-6 text-white" />
+                  <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <p className="text-sm text-white/80">Transaksi</p>
-                <p className="text-2xl font-bold text-white mt-1">{summary.transactions}</p>
+                <p className="text-xs sm:text-sm text-white/80">Transaksi</p>
+                <p className="text-lg sm:text-2xl font-bold text-white mt-1">{summary.transactions}</p>
               </CardContent>
             </Card>
 
             <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-teal-600 animate-scale-in" style={{ animationDelay: '200ms' }}>
-              <CardContent className="pt-6">
+              <CardContent className="pt-4 sm:pt-6 pb-4 sm:pb-6 px-4 sm:px-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <TrendingUp className="h-6 w-6 text-white" />
+                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <p className="text-sm text-white/80">Rata-rata</p>
-                <p className="text-2xl font-bold text-white mt-1">{formatPrice(summary.avg)}</p>
+                <p className="text-xs sm:text-sm text-white/80">Rata-rata</p>
+                <p className="text-lg sm:text-2xl font-bold text-white mt-1 truncate">{formatPrice(summary.avg)}</p>
               </CardContent>
             </Card>
           </div>

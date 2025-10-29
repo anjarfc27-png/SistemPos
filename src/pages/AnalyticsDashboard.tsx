@@ -134,7 +134,7 @@ export const AnalyticsDashboard = () => {
   return (
     <div className="min-h-screen w-full bg-background animate-fade-in-up">
       {/* Header */}
-      <header className="bg-card pb-6 pt-[calc(env(safe-area-inset-top)+24px)] border-b">
+      <header className="bg-card pb-6 pt-6 safe-top border-b">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4">
             <Button

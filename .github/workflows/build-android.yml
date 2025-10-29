@@ -53,6 +53,24 @@ jobs:
     - name: Add Android platform
       run: npx cap add android
     
+    - name: Inject Permissions to AndroidManifest.xml
+      run: |
+        MANIFEST_PATH="android/app/src/main/AndroidManifest.xml"
+        echo "📝 Injecting permissions to $MANIFEST_PATH"
+        
+        # Backup original
+        cp $MANIFEST_PATH ${MANIFEST_PATH}.backup
+        
+        # Inject permissions before </manifest>
+        sed -i 's|</manifest>|\n    <!-- Camera permissions for barcode scanner -->\n    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    \n    <!-- Bluetooth permissions for thermal printer -->\n    <uses-permission android:name="android.permission.BLUETOOTH" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />\n    \n    <!-- Camera features -->\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />\n    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />\n\n</manifest>|' $MANIFEST_PATH
+        
+        # Inject ML Kit metadata before </application>
+        sed -i 's|</application>|        <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />\n    </application>|' $MANIFEST_PATH
+        
+        echo "✅ Permissions injected successfully!"
+        echo "📄 AndroidManifest.xml content:"
+        cat $MANIFEST_PATH
+    
     - name: Copy web assets to android
       run: npx cap copy android
     
@@ -103,6 +121,14 @@ jobs:
           Build: #${{ github.run_number }}
           Date: ${{ steps.date.outputs.date }}
           Commit: ${{ github.sha }}
+          
+          ✨ **Fitur Terbaru:**
+          - ✅ Permission kamera untuk barcode scanner
+          - ✅ Fixed header position di native app
+          - ✅ Fixed layout mobile reports page
+          - ✅ WhatsApp share dengan gambar
+          - ✅ Grafik analytics tanpa legend
+          - ✅ Grafik 1 bulan menampilkan data per hari
           
           ### Download
           Download file APK di bawah untuk install di Android

@@ -13,8 +13,42 @@ export const DashboardAnalytics = () => {
   const analyticsData = useMemo(() => {
     const months = parseInt(timeRange);
     const endDate = new Date();
+    
+    // Special handling for "1 Bulan" - show daily data (1-30)
+    if (months === 1) {
+      const data = [];
+      const monthStart = startOfMonth(endDate);
+      const monthEnd = endOfMonth(endDate);
+      const currentDate = new Date(monthStart);
+      
+      while (currentDate <= monthEnd) {
+        const dayStart = new Date(currentDate);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(currentDate);
+        dayEnd.setHours(23, 59, 59, 999);
+        
+        const dayReceipts = receipts.filter(r => {
+          const receiptDate = new Date(r.timestamp);
+          return receiptDate >= dayStart && receiptDate <= dayEnd && !r.isManual;
+        });
+        
+        const revenue = dayReceipts.reduce((sum, r) => sum + r.total, 0);
+        const profit = dayReceipts.reduce((sum, r) => sum + r.profit, 0);
+        
+        data.push({
+          month: format(currentDate, 'd', { locale: localeId }), // Just show day number
+          revenue: Math.round(revenue),
+          profit: Math.round(profit),
+        });
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      return data.length > 0 ? data : [{ month: '1', revenue: 0, profit: 0 }];
+    }
+    
+    // For other time ranges (2, 3, 6, 12 months) - show monthly data
     const startDate = subMonths(startOfMonth(endDate), months - 1);
-
     const monthsInterval = eachMonthOfInterval({ 
       start: startDate, 
       end: endOfMonth(endDate) 
@@ -118,10 +152,6 @@ export const DashboardAnalytics = () => {
                 formatter={(value: number) => formatPrice(value)}
                 cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1, strokeDasharray: '5 5' }}
               />
-              <Legend 
-                wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }}
-                iconType="circle"
-              />
               <Area
                 type="monotone"
                 dataKey="revenue"
@@ -139,7 +169,6 @@ export const DashboardAnalytics = () => {
                 dataKey="revenue" 
                 stroke="hsl(217 91% 60%)" 
                 strokeWidth={3}
-                name="Pendapatan"
                 dot={{ 
                   r: 4, 
                   strokeWidth: 2, 
@@ -158,7 +187,6 @@ export const DashboardAnalytics = () => {
                 dataKey="profit" 
                 stroke="hsl(142 76% 36%)" 
                 strokeWidth={3}
-                name="Profit"
                 dot={{ 
                   r: 4,
                   strokeWidth: 2,

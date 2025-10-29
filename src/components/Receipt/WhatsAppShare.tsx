@@ -7,6 +7,7 @@ import { Receipt } from '@/types/pos';
 import { useStore } from '@/contexts/StoreContext';
 import { MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
 
 interface WhatsAppShareProps {
   receipt: Receipt;
@@ -17,6 +18,7 @@ export const WhatsAppShare = ({ receipt, formatPrice }: WhatsAppShareProps) => {
   const { currentStore } = useStore();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const formatPhoneNumber = (input: string): string => {
     // Remove all non-digit characters
@@ -52,7 +54,88 @@ export const WhatsAppShare = ({ receipt, formatPrice }: WhatsAppShareProps) => {
     }
   };
 
-  const sendWhatsApp = () => {
+  const generateReceiptImage = async (): Promise<Blob | null> => {
+    try {
+      setIsGenerating(true);
+      
+      // Create temporary div for rendering receipt
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.width = '400px';
+      tempDiv.style.padding = '20px';
+      tempDiv.style.backgroundColor = 'white';
+      tempDiv.style.fontFamily = '"Courier New", monospace';
+      
+      // Build receipt HTML
+      let html = `
+        <div style="font-family: 'Courier New', monospace; color: black;">
+          <h2 style="text-align: center; font-size: 20px; margin-bottom: 10px; font-weight: bold;">
+            ${currentStore?.name || 'NOTA PEMBELIAN'}
+          </h2>
+          <div style="border-bottom: 2px solid black; margin: 10px 0;"></div>
+          <p style="margin: 5px 0;">No: ${receipt.id}</p>
+          <p style="margin: 5px 0;">Tanggal: ${receipt.timestamp.toLocaleDateString('id-ID')}</p>
+          <p style="margin: 5px 0;">Waktu: ${receipt.timestamp.toLocaleTimeString('id-ID')}</p>
+          <div style="border-bottom: 2px solid black; margin: 10px 0;"></div>
+      `;
+      
+      receipt.items.forEach(item => {
+        const price = item.finalPrice || item.product.sellPrice;
+        const total = price * item.quantity;
+        html += `
+          <div style="margin-bottom: 8px;">
+            <p style="margin: 2px 0; font-weight: bold;">${item.product.name}</p>
+            <p style="margin: 2px 0;">${item.quantity} x ${formatPrice(price)} = ${formatPrice(total)}</p>
+          </div>
+        `;
+      });
+      
+      html += `
+          <div style="border-bottom: 2px solid black; margin: 10px 0;"></div>
+          <p style="margin: 5px 0;">Sub Total: ${formatPrice(receipt.subtotal)}</p>
+      `;
+      
+      if (receipt.discount > 0) {
+        html += `<p style="margin: 5px 0;">Diskon: ${formatPrice(receipt.discount)}</p>`;
+      }
+      
+      html += `
+          <p style="font-size: 18px; font-weight: bold; margin: 5px 0;">Total: ${formatPrice(receipt.total)}</p>
+          <div style="border-bottom: 2px solid black; margin: 10px 0;"></div>
+          <p style="text-align: center; margin: 5px 0;">Terima kasih atas kunjungan Anda!</p>
+          <p style="text-align: center; margin: 5px 0;">${currentStore?.name || 'Toko Kami'}</p>
+        </div>
+      `;
+      
+      tempDiv.innerHTML = html;
+      document.body.appendChild(tempDiv);
+      
+      // Generate canvas
+      const canvas = await html2canvas(tempDiv, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+      });
+      
+      // Cleanup
+      document.body.removeChild(tempDiv);
+      
+      // Convert to blob
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        }, 'image/png');
+      });
+    } catch (error) {
+      console.error('Error generating receipt image:', error);
+      toast.error('Gagal membuat gambar nota');
+      return null;
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const sendWhatsApp = async () => {
     if (!phoneNumber || phoneNumber.length < 10) {
       toast.error('Nomor WhatsApp tidak valid');
       return;
@@ -60,7 +143,47 @@ export const WhatsAppShare = ({ receipt, formatPrice }: WhatsAppShareProps) => {
 
     const formattedPhone = formatPhoneNumber(phoneNumber);
     
-    // Create receipt message
+    // Try to generate and share image first
+    const imageBlob = await generateReceiptImage();
+    
+    if (imageBlob && navigator.share) {
+      // Try Web Share API with image
+      try {
+        const file = new File([imageBlob], `nota-${receipt.id}.png`, { type: 'image/png' });
+        
+        // Check if can share files
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: `Nota ${receipt.id}`,
+            text: `Nota dari ${currentStore?.name || 'Toko Kami'}`,
+          });
+          
+          toast.success('Gambar nota berhasil dibagikan!');
+          setIsOpen(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Web Share API failed:', error);
+        // Continue to fallback
+      }
+    }
+    
+    // Fallback: Download image + open WhatsApp text
+    if (imageBlob) {
+      const url = URL.createObjectURL(imageBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `nota-${receipt.id}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success('Gambar nota berhasil diunduh! Silakan kirim manual via WhatsApp');
+    }
+    
+    // Create receipt message (text fallback)
     let message = `*${currentStore?.name || 'NOTA PEMBELIAN'}*\n`;
     message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
     message += `No: ${receipt.id}\n`;
@@ -95,7 +218,6 @@ export const WhatsAppShare = ({ receipt, formatPrice }: WhatsAppShareProps) => {
     
     window.open(whatsappUrl, '_blank');
     setIsOpen(false);
-    toast.success('Membuka WhatsApp...');
   };
 
   return (
@@ -130,9 +252,22 @@ export const WhatsAppShare = ({ receipt, formatPrice }: WhatsAppShareProps) => {
               Masukkan nomor tanpa +62 atau 0
             </p>
           </div>
-          <Button onClick={sendWhatsApp} className="w-full gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Kirim via WhatsApp
+          <Button 
+            onClick={sendWhatsApp} 
+            className="w-full gap-2"
+            disabled={isGenerating}
+          >
+            {isGenerating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Membuat gambar...
+              </>
+            ) : (
+              <>
+                <MessageSquare className="h-4 w-4" />
+                Kirim via WhatsApp
+              </>
+            )}
           </Button>
         </div>
       </DialogContent>
