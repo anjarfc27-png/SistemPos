@@ -82,12 +82,18 @@ export const LoginPage = () => {
     e.preventDefault();
     setErrors('');
     
+    // Show loading toast
+    sonnerToast.loading('Memeriksa akun...', { id: 'login-loading' });
+    
     // Detect if input is email or username
     const isEmail = loginData.identifier.includes('@');
     
     const { error } = isEmail 
       ? await signIn(loginData.identifier, loginData.password)
       : await signInWithUsername(loginData.identifier, loginData.password);
+    
+    // Dismiss loading
+    sonnerToast.dismiss('login-loading');
       
     if (error) {
       // Convert error messages to Indonesian

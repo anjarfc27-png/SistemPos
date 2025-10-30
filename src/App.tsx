@@ -19,6 +19,7 @@ import { LoginPage } from "@/components/Auth/LoginPage";
 import { ProtectedRoute } from "@/components/Auth/ProtectedRoute";
 import { AdminRoute } from "@/components/Auth/AdminRoute";
 import { UserManagement } from "@/components/Admin/UserManagement";
+import { UserContacts } from "@/pages/admin/UserContacts";
 import { WaitingApproval } from "@/pages/WaitingApproval";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { FeedbackPage } from "@/pages/FeedbackPage";
@@ -101,6 +102,11 @@ const AppRoutes = () => {
         <Route path="/admin/subscriptions" element={
           <AdminRoute>
             <SubscriptionManagement />
+          </AdminRoute>
+        } />
+        <Route path="/admin/contacts" element={
+          <AdminRoute>
+            <UserContacts />
           </AdminRoute>
         } />
         <Route path="/admin/feedbacks" element={

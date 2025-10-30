@@ -245,15 +245,15 @@ export const UserManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-purple-50/30 p-6 space-y-6 animate-fade-in-up">
-      {/* Header with gradient */}
-      <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 p-6 rounded-2xl backdrop-blur-sm">
+    <div className="min-h-screen bg-background p-4 sm:p-6 space-y-6 safe-top safe-bottom animate-fade-in-up">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-2xl shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
               Admin Panel
             </h1>
-            <p className="text-muted-foreground">Kelola user dan pengaturan sistem</p>
+            <p className="text-blue-100">Kelola user dan pengaturan sistem</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <Button 
@@ -280,9 +280,9 @@ export const UserManagement = () => {
       </div>
 
       {/* Navigation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <Card 
-          className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 bg-gradient-to-br from-blue-500 to-blue-600 animate-scale-in"
+          className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 bg-gradient-to-br from-blue-600 to-blue-700 animate-scale-in"
           onClick={() => window.scrollTo({ top: document.getElementById('pending-users')?.offsetTop || 0, behavior: 'smooth' })}
         >
           <CardContent className="pt-6">
@@ -299,7 +299,7 @@ export const UserManagement = () => {
         </Card>
 
         <Card 
-          className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 bg-gradient-to-br from-emerald-500 to-teal-600 animate-scale-in"
+          className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 bg-gradient-to-br from-emerald-600 to-teal-700 animate-scale-in"
           style={{ animationDelay: '100ms' }}
           onClick={() => navigate('/admin/subscriptions')}
         >
@@ -317,8 +317,26 @@ export const UserManagement = () => {
         </Card>
 
         <Card 
-          className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 bg-gradient-to-br from-purple-500 to-pink-600 animate-scale-in"
+          className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 bg-gradient-to-br from-purple-600 to-pink-700 animate-scale-in"
           style={{ animationDelay: '200ms' }}
+          onClick={() => navigate('/admin/contacts')}
+        >
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="p-4 rounded-2xl bg-white/20 backdrop-blur-sm">
+                <MessageCircle className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <p className="text-sm text-white/80">User Contacts</p>
+                <p className="text-xl font-bold text-white">Lihat →</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 bg-gradient-to-br from-orange-500 to-red-600 animate-scale-in"
+          style={{ animationDelay: '300ms' }}
           onClick={() => window.scrollTo({ top: document.getElementById('admin-contact')?.offsetTop || 0, behavior: 'smooth' })}
         >
           <CardContent className="pt-6">
@@ -336,34 +354,34 @@ export const UserManagement = () => {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="border-0 shadow-lg animate-fade-in-up">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100 animate-fade-in-up">
           <CardContent className="pt-6 text-center">
-            <Badge variant="secondary" className="mb-2 px-3 py-1 animate-pulse">Menunggu</Badge>
-            <p className="text-4xl font-bold text-blue-600">{pendingUsers.length}</p>
-            <p className="text-sm text-muted-foreground mt-1">Pending Approval</p>
+            <Badge className="mb-2 px-3 py-1 bg-blue-600 animate-pulse">Menunggu</Badge>
+            <p className="text-4xl font-bold text-blue-700">{pendingUsers.length}</p>
+            <p className="text-sm text-blue-600 mt-1">Pending Approval</p>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+        <Card className="border-0 shadow-md bg-gradient-to-br from-emerald-50 to-emerald-100 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
           <CardContent className="pt-6 text-center">
-            <Badge variant="default" className="mb-2 px-3 py-1">Aktif</Badge>
-            <p className="text-4xl font-bold text-emerald-600">{approvedUsers.length}</p>
-            <p className="text-sm text-muted-foreground mt-1">Active Users</p>
+            <Badge className="mb-2 px-3 py-1 bg-emerald-600">Aktif</Badge>
+            <p className="text-4xl font-bold text-emerald-700">{approvedUsers.length}</p>
+            <p className="text-sm text-emerald-600 mt-1">Active Users</p>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+        <Card className="border-0 shadow-md bg-gradient-to-br from-purple-50 to-purple-100 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           <CardContent className="pt-6 text-center">
-            <Badge variant="outline" className="mb-2 px-3 py-1">Total</Badge>
-            <p className="text-4xl font-bold text-purple-600">{pendingUsers.length + approvedUsers.length}</p>
-            <p className="text-sm text-muted-foreground mt-1">Total Users</p>
+            <Badge className="mb-2 px-3 py-1 bg-purple-600">Total</Badge>
+            <p className="text-4xl font-bold text-purple-700">{pendingUsers.length + approvedUsers.length}</p>
+            <p className="text-sm text-purple-600 mt-1">Total Users</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Admin Contact Settings */}
-      <Card id="admin-contact" className="border-0 shadow-lg gradient-border animate-fade-in-up">
+      <Card id="admin-contact" className="border-0 shadow-md animate-fade-in-up">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl">
             <MessageCircle className="h-6 w-6 text-primary" />

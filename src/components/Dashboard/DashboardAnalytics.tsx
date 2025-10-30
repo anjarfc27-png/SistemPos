@@ -169,7 +169,7 @@ export const DashboardAnalytics = () => {
                 dataKey="revenue" 
                 stroke="hsl(217 91% 60%)" 
                 strokeWidth={3}
-                dot={{ 
+                dot={timeRange === '1' ? false : { 
                   r: 4, 
                   strokeWidth: 2, 
                   fill: 'hsl(var(--background))',
@@ -187,9 +187,9 @@ export const DashboardAnalytics = () => {
                 dataKey="profit" 
                 stroke="hsl(142 76% 36%)" 
                 strokeWidth={3}
-                dot={{ 
-                  r: 4,
-                  strokeWidth: 2,
+                dot={timeRange === '1' ? false : { 
+                  r: 4, 
+                  strokeWidth: 2, 
                   fill: 'hsl(var(--background))',
                   stroke: 'hsl(142 76% 36%)'
                 }}

@@ -8,7 +8,7 @@ export const BackupRestorePage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full bg-background">
+    <div className="min-h-screen w-full bg-background safe-top safe-bottom">
       <div className="w-full px-4 py-6 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         {/* Header with back button */}
         <div className="flex items-center gap-4 mb-6">

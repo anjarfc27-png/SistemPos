@@ -111,18 +111,18 @@ export const ReportsPage = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-background via-background to-blue-50/30 animate-fade-in-up">
+    <div className="min-h-screen w-full bg-background animate-fade-in-up safe-top safe-bottom">
       <div className="container mx-auto p-4 md:p-6 max-w-7xl">
         <div className="space-y-6">
           {/* Header with gradient */}
-          <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-6 rounded-2xl backdrop-blur-sm">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-xl">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
                   Laporan Penjualan
                 </h1>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Kelola dan pantau riwayat transaksi Anda
+                <p className="text-blue-100">
+                  Analisis transaksi dan performa toko
                 </p>
               </div>
               <div className="flex items-center gap-3">
