@@ -83,8 +83,8 @@ export const ReportsPage = () => {
 
   if (viewingReceipt) {
     return (
-      <div className="min-h-screen w-full bg-background">
-        <div className="container mx-auto p-2 sm:p-4 max-w-4xl">
+      <div className="min-h-screen w-full bg-background safe-top safe-bottom">
+        <div className="container mx-auto p-4 pt-6 sm:p-4 max-w-4xl">
           <div className="space-y-4">
             <div className="flex items-center gap-2 sm:gap-4">
               <Button
@@ -112,28 +112,24 @@ export const ReportsPage = () => {
 
   return (
     <div className="min-h-screen w-full bg-background animate-fade-in-up safe-top safe-bottom">
-      <div className="container mx-auto p-4 md:p-6 max-w-7xl">
-        <div className="space-y-6">
+      <div className="container mx-auto p-4 pt-6 md:p-6 max-w-7xl">
+        <div className="space-y-4 sm:space-y-6">
           {/* Header with gradient */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 sm:p-6 rounded-2xl shadow-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
                   Laporan Penjualan
                 </h1>
-                <p className="text-blue-100">
+                <p className="text-xs sm:text-sm text-blue-100">
                   Analisis transaksi dan performa toko
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline">Export</span>
-                </Button>
+              <div className="flex items-center gap-2">
                 <Link to="/">
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <ArrowLeft className="h-4 w-4" />
-                    <span className="hidden sm:inline">Dashboard</span>
+                  <Button variant="outline" size="sm" className="gap-2 h-9 text-xs sm:text-sm">
+                    <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Kembali</span>
                   </Button>
                 </Link>
               </div>

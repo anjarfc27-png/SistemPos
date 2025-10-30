@@ -112,17 +112,20 @@ export const SubscriptionManagement = () => {
     <div className="min-h-screen bg-background safe-top safe-bottom">
       <div className="p-4 pt-6 space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => navigate('/admin/users')}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Manajemen Subscription</h1>
-          <p className="text-sm text-muted-foreground">Kelola trial dan perpanjangan subscription user</p>
+      <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-4 sm:p-6 rounded-2xl shadow-lg mb-4">
+        <div className="flex items-center gap-3 mb-3">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate('/admin/users')}
+            className="text-white hover:bg-white/20"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Manajemen Subscription</h1>
+            <p className="text-xs sm:text-sm text-purple-100">Kelola trial dan perpanjangan subscription user</p>
+          </div>
         </div>
       </div>
 
