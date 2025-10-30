@@ -245,17 +245,18 @@ export const UserManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6 space-y-6 safe-top safe-bottom animate-fade-in-up">
+    <div className="min-h-screen bg-background safe-top safe-bottom animate-fade-in-up">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 pt-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-2xl shadow-lg">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 sm:p-6 rounded-2xl shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
               Admin Panel
             </h1>
-            <p className="text-blue-100">Kelola user dan pengaturan sistem</p>
+            <p className="text-xs sm:text-sm text-blue-100">Kelola user dan pengaturan sistem</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex gap-2">
             <Button 
               variant="outline" 
               onClick={() => navigate('/')}
@@ -280,73 +281,73 @@ export const UserManagement = () => {
       </div>
 
       {/* Navigation Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
         <Card 
-          className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 bg-gradient-to-br from-blue-600 to-blue-700 animate-scale-in"
+          className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-95 bg-gradient-to-br from-blue-600 to-blue-700 animate-scale-in"
           onClick={() => window.scrollTo({ top: document.getElementById('pending-users')?.offsetTop || 0, behavior: 'smooth' })}
         >
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-4 rounded-2xl bg-white/20 backdrop-blur-sm">
-                <UsersIcon className="h-8 w-8 text-white" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col items-center text-center gap-2">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-white/20 backdrop-blur-sm">
+                <UsersIcon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
-                <p className="text-sm text-white/80">Pending Users</p>
-                <p className="text-3xl font-bold text-white">{pendingUsers.length}</p>
+                <p className="text-[10px] sm:text-xs text-white/80 mb-0.5">Pending</p>
+                <p className="text-xl sm:text-2xl font-bold text-white">{pendingUsers.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card 
-          className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 bg-gradient-to-br from-emerald-600 to-teal-700 animate-scale-in"
-          style={{ animationDelay: '100ms' }}
+          className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-95 bg-gradient-to-br from-emerald-600 to-teal-700 animate-scale-in"
+          style={{ animationDelay: '50ms' }}
           onClick={() => navigate('/admin/subscriptions')}
         >
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-4 rounded-2xl bg-white/20 backdrop-blur-sm">
-                <Calendar className="h-8 w-8 text-white" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col items-center text-center gap-2">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-white/20 backdrop-blur-sm">
+                <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
-                <p className="text-sm text-white/80">Subscriptions</p>
-                <p className="text-xl font-bold text-white">Kelola →</p>
+                <p className="text-[10px] sm:text-xs text-white/80 mb-0.5">Subscribe</p>
+                <p className="text-sm sm:text-base font-bold text-white">Kelola →</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card 
-          className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 bg-gradient-to-br from-purple-600 to-pink-700 animate-scale-in"
-          style={{ animationDelay: '200ms' }}
+          className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-95 bg-gradient-to-br from-purple-600 to-pink-700 animate-scale-in"
+          style={{ animationDelay: '100ms' }}
           onClick={() => navigate('/admin/contacts')}
         >
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-4 rounded-2xl bg-white/20 backdrop-blur-sm">
-                <MessageCircle className="h-8 w-8 text-white" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col items-center text-center gap-2">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-white/20 backdrop-blur-sm">
+                <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
-                <p className="text-sm text-white/80">User Contacts</p>
-                <p className="text-xl font-bold text-white">Lihat →</p>
+                <p className="text-[10px] sm:text-xs text-white/80 mb-0.5">Contacts</p>
+                <p className="text-sm sm:text-base font-bold text-white">Lihat →</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card 
-          className="border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 bg-gradient-to-br from-orange-500 to-red-600 animate-scale-in"
-          style={{ animationDelay: '300ms' }}
+          className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer active:scale-95 bg-gradient-to-br from-orange-500 to-red-600 animate-scale-in"
+          style={{ animationDelay: '150ms' }}
           onClick={() => window.scrollTo({ top: document.getElementById('admin-contact')?.offsetTop || 0, behavior: 'smooth' })}
         >
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-4 rounded-2xl bg-white/20 backdrop-blur-sm">
-                <Settings className="h-8 w-8 text-white" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col items-center text-center gap-2">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-white/20 backdrop-blur-sm">
+                <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
-                <p className="text-sm text-white/80">Pengaturan</p>
-                <p className="text-xl font-bold text-white">Kontak →</p>
+                <p className="text-[10px] sm:text-xs text-white/80 mb-0.5">Settings</p>
+                <p className="text-sm sm:text-base font-bold text-white">Kontak →</p>
               </div>
             </div>
           </CardContent>
@@ -354,77 +355,73 @@ export const UserManagement = () => {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-blue-50 to-blue-100 animate-fade-in-up">
-          <CardContent className="pt-6 text-center">
-            <Badge className="mb-2 px-3 py-1 bg-blue-600 animate-pulse">Menunggu</Badge>
-            <p className="text-4xl font-bold text-blue-700">{pendingUsers.length}</p>
-            <p className="text-sm text-blue-600 mt-1">Pending Approval</p>
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 animate-fade-in-up">
+          <CardContent className="pt-3 sm:pt-4 pb-3 sm:pb-4 px-2 sm:px-4 text-center">
+            <Badge className="mb-1 px-2 py-0.5 text-[10px] sm:text-xs bg-blue-600 animate-pulse">Menunggu</Badge>
+            <p className="text-2xl sm:text-4xl font-bold text-blue-700 dark:text-blue-300">{pendingUsers.length}</p>
+            <p className="text-[10px] sm:text-sm text-blue-600 dark:text-blue-400 mt-0.5">Pending</p>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-emerald-50 to-emerald-100 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          <CardContent className="pt-6 text-center">
-            <Badge className="mb-2 px-3 py-1 bg-emerald-600">Aktif</Badge>
-            <p className="text-4xl font-bold text-emerald-700">{approvedUsers.length}</p>
-            <p className="text-sm text-emerald-600 mt-1">Active Users</p>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/20 dark:to-emerald-900/20 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
+          <CardContent className="pt-3 sm:pt-4 pb-3 sm:pb-4 px-2 sm:px-4 text-center">
+            <Badge className="mb-1 px-2 py-0.5 text-[10px] sm:text-xs bg-emerald-600">Aktif</Badge>
+            <p className="text-2xl sm:text-4xl font-bold text-emerald-700 dark:text-emerald-300">{approvedUsers.length}</p>
+            <p className="text-[10px] sm:text-sm text-emerald-600 dark:text-emerald-400 mt-0.5">Active</p>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-md bg-gradient-to-br from-purple-50 to-purple-100 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-          <CardContent className="pt-6 text-center">
-            <Badge className="mb-2 px-3 py-1 bg-purple-600">Total</Badge>
-            <p className="text-4xl font-bold text-purple-700">{pendingUsers.length + approvedUsers.length}</p>
-            <p className="text-sm text-purple-600 mt-1">Total Users</p>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          <CardContent className="pt-3 sm:pt-4 pb-3 sm:pb-4 px-2 sm:px-4 text-center">
+            <Badge className="mb-1 px-2 py-0.5 text-[10px] sm:text-xs bg-purple-600">Total</Badge>
+            <p className="text-2xl sm:text-4xl font-bold text-purple-700 dark:text-purple-300">{pendingUsers.length + approvedUsers.length}</p>
+            <p className="text-[10px] sm:text-sm text-purple-600 dark:text-purple-400 mt-0.5">Users</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Admin Contact Settings */}
-      <Card id="admin-contact" className="border-0 shadow-md animate-fade-in-up">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl">
-            <MessageCircle className="h-6 w-6 text-primary" />
+      <Card id="admin-contact" className="border-0 shadow-sm animate-fade-in-up">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <MessageCircle className="h-5 w-5 text-primary" />
             Kontak Admin
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="admin-whatsapp" className="text-base">
-                <MessageCircle className="h-4 w-4 inline mr-2" />
+              <Label htmlFor="admin-whatsapp" className="text-sm font-medium">
+                <MessageCircle className="h-3.5 w-3.5 inline mr-1.5" />
                 Nomor WhatsApp
               </Label>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  id="admin-whatsapp"
-                  value={adminWhatsApp}
-                  onChange={(e) => setAdminWhatsApp(e.target.value)}
-                  placeholder="628xx xxxx xxxx"
-                  className="flex-1"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Format: 6281234567890 (tanpa tanda +)
+              <Input
+                id="admin-whatsapp"
+                value={adminWhatsApp}
+                onChange={(e) => setAdminWhatsApp(e.target.value)}
+                placeholder="628xx xxxx xxxx"
+                className="mt-2 h-10 rounded-lg"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Format: 6281234567890 (tanpa +)
               </p>
             </div>
             
             <div>
-              <Label htmlFor="admin-instagram" className="text-base">
-                <Instagram className="h-4 w-4 inline mr-2" />
+              <Label htmlFor="admin-instagram" className="text-sm font-medium">
+                <Instagram className="h-3.5 w-3.5 inline mr-1.5" />
                 Username Instagram
               </Label>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  id="admin-instagram"
-                  value={adminInstagram}
-                  onChange={(e) => setAdminInstagram(e.target.value)}
-                  placeholder="username_anda"
-                  className="flex-1"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Tanpa simbol @ (contoh: username_anda)
+              <Input
+                id="admin-instagram"
+                value={adminInstagram}
+                onChange={(e) => setAdminInstagram(e.target.value)}
+                placeholder="username_anda"
+                className="mt-2 h-10 rounded-lg"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Tanpa @ (contoh: username_anda)
               </p>
             </div>
           </div>
@@ -432,7 +429,7 @@ export const UserManagement = () => {
           <Button 
             onClick={saveAdminContactInfo} 
             disabled={savingContacts}
-            className="w-full gradient-blue"
+            className="w-full h-10 rounded-lg"
           >
             {savingContacts ? 'Menyimpan...' : 'Simpan Kontak Admin'}
           </Button>
@@ -440,63 +437,63 @@ export const UserManagement = () => {
       </Card>
 
       {/* Pending Approvals */}
-      <Card id="pending-users" className="border-0 shadow-lg animate-fade-in-up">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            <div className="p-3 rounded-xl bg-red-500/10">
-              <UsersIcon className="h-6 w-6 text-red-600" />
+      <Card id="pending-users" className="border-0 shadow-sm animate-fade-in-up">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <div className="p-2 rounded-lg bg-red-500/10">
+              <UsersIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
             </div>
-            Menunggu Persetujuan
+            <span className="text-base sm:text-lg">Pending</span>
             {pendingUsers.length > 0 && (
-              <Badge className="bg-red-500 text-white text-base px-3 py-1 animate-pulse">
+              <Badge className="bg-red-500 text-white text-xs px-2 py-0.5 animate-pulse">
                 {pendingUsers.length}
               </Badge>
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {pendingUsers.length === 0 ? (
-            <div className="text-center py-12">
-              <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <p className="text-muted-foreground font-medium">Tidak ada user yang menunggu persetujuan</p>
-              <p className="text-sm text-muted-foreground mt-2">Semua user sudah diproses</p>
+            <div className="text-center py-8">
+              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
+              <p className="text-sm font-medium text-muted-foreground">Tidak ada pending user</p>
+              <p className="text-xs text-muted-foreground mt-1">Semua sudah diproses</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {pendingUsers.map((user) => (
                 <Card
                   key={user.user_id}
-                  className="border-2 border-red-200 bg-red-50/50 hover:shadow-lg transition-all"
+                  className="border border-red-200 bg-red-50/30 dark:bg-red-950/10 hover:shadow-md transition-all"
                 >
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600">
-                        <UsersIcon className="h-6 w-6 text-white" />
+                  <CardContent className="p-3">
+                    <div className="flex items-start gap-2.5 mb-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
+                        <UsersIcon className="h-4 w-4 text-white" />
                       </div>
-                      <div className="flex-1">
-                        <p className="font-bold text-lg">{user.username}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          📅 {new Date(user.created_at).toLocaleString('id-ID')}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">{user.username}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {new Date(user.created_at).toLocaleDateString('id-ID')}
                         </p>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                        className="flex-1 h-8 text-xs bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg"
                         onClick={() => setActionUser({ id: user.user_id, action: 'approve' })}
                       >
-                        <CheckCircle className="h-4 w-4 mr-1" />
+                        <CheckCircle className="h-3 w-3 mr-1" />
                         Setujui
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
-                        className="flex-1"
+                        className="flex-1 h-8 text-xs rounded-lg"
                         onClick={() => setActionUser({ id: user.user_id, action: 'reject' })}
                       >
-                        <XCircle className="h-4 w-4 mr-1" />
+                        <XCircle className="h-3 w-3 mr-1" />
                         Tolak
                       </Button>
                     </div>
@@ -509,41 +506,41 @@ export const UserManagement = () => {
       </Card>
 
       {/* Approved Users */}
-      <Card className="border-0 shadow-lg animate-fade-in-up">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            <div className="p-3 rounded-xl bg-emerald-500/10">
-              <CheckCircle className="h-6 w-6 text-emerald-600" />
+      <Card className="border-0 shadow-sm animate-fade-in-up">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <div className="p-2 rounded-lg bg-emerald-500/10">
+              <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
             </div>
-            User Aktif
-            <Badge variant="outline" className="text-base px-3 py-1">
+            <span className="text-base sm:text-lg">User Aktif</span>
+            <Badge variant="outline" className="text-xs px-2 py-0.5">
               {approvedUsers.length}
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {approvedUsers.length === 0 ? (
-            <div className="text-center py-12">
-              <UsersIcon className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground font-medium">Belum ada user yang disetujui</p>
+            <div className="text-center py-8">
+              <UsersIcon className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-sm font-medium text-muted-foreground">Belum ada user aktif</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {approvedUsers.map((user) => (
                 <Card
                   key={user.user_id}
-                  className="border-2 border-emerald-200 bg-emerald-50/50 hover:shadow-lg transition-all"
+                  className="border border-emerald-200 bg-emerald-50/30 dark:bg-emerald-950/10 hover:shadow-md transition-all"
                 >
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600">
-                        <CheckCircle className="h-6 w-6 text-white" />
+                  <CardContent className="p-3">
+                    <div className="flex items-start gap-2.5 mb-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600">
+                        <CheckCircle className="h-4 w-4 text-white" />
                       </div>
-                      <div className="flex-1">
-                        <p className="font-bold">{user.username}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                        <p className="text-xs text-emerald-600 mt-1 font-medium">
-                          ✓ Aktif sejak {user.approved_at ? new Date(user.approved_at).toLocaleDateString('id-ID') : '-'}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">{user.username}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
+                          ✓ {user.approved_at ? new Date(user.approved_at).toLocaleDateString('id-ID') : '-'}
                         </p>
                       </div>
                     </div>
@@ -551,9 +548,9 @@ export const UserManagement = () => {
                       size="sm"
                       variant="outline"
                       onClick={() => setActionUser({ id: user.user_id, action: 'suspend' })}
-                      className="w-full hover:bg-red-500/10 hover:text-red-600 hover:border-red-600"
+                      className="w-full h-8 text-xs rounded-lg hover:bg-red-500/10 hover:text-red-600 hover:border-red-600"
                     >
-                      <Ban className="h-4 w-4 mr-1" />
+                      <Ban className="h-3 w-3 mr-1" />
                       Suspend
                     </Button>
                   </CardContent>
@@ -563,6 +560,7 @@ export const UserManagement = () => {
           )}
         </CardContent>
       </Card>
+      </div>
 
       {/* Confirmation Dialog */}
       <AlertDialog open={!!actionUser} onOpenChange={() => setActionUser(null)}>

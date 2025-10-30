@@ -109,7 +109,8 @@ export const SubscriptionManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-4">
+    <div className="min-h-screen bg-background safe-top safe-bottom">
+      <div className="p-4 pt-6 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Button 
@@ -126,48 +127,38 @@ export const SubscriptionManagement = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total User</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+          <CardContent className="pt-3 sm:pt-4 pb-3 sm:pb-4 px-3 sm:px-4 text-center">
+            <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Total</p>
+            <p className="text-xl sm:text-3xl font-bold text-blue-700 dark:text-blue-300">{users.length}</p>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Subscription Aktif</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              -
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Run migration first</p>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20">
+          <CardContent className="pt-3 sm:pt-4 pb-3 sm:pb-4 px-3 sm:px-4 text-center">
+            <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-1">Aktif</p>
+            <p className="text-xl sm:text-3xl font-bold text-emerald-700 dark:text-emerald-300">-</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Migration</p>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Expired</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              -
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Run migration first</p>
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20">
+          <CardContent className="pt-3 sm:pt-4 pb-3 sm:pb-4 px-3 sm:px-4 text-center">
+            <p className="text-xs sm:text-sm text-red-600 dark:text-red-400 font-medium mb-1">Expired</p>
+            <p className="text-xl sm:text-3xl font-bold text-red-700 dark:text-red-300">-</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Migration</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Search */}
       <div className="space-y-2">
-        <Label>Cari User</Label>
         <Input
-          placeholder="Email atau username..."
+          placeholder="🔍 Cari email atau username..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          className="h-11 rounded-xl border-2"
         />
       </div>
 
@@ -180,9 +171,10 @@ export const SubscriptionManagement = () => {
             </CardContent>
           </Card>
         ) : filteredUsers.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              Tidak ada user ditemukan
+          <Card className="border-0 shadow-sm">
+            <CardContent className="pt-12 pb-12 text-center">
+              <Users className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
+              <p className="text-muted-foreground font-medium">Tidak ada user ditemukan</p>
             </CardContent>
           </Card>
         ) : (
@@ -190,38 +182,42 @@ export const SubscriptionManagement = () => {
             const { status, variant, icon: StatusIcon } = getSubscriptionStatus();
             
             return (
-              <Card key={user.user_id}>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col md:flex-row justify-between gap-4">
-                  <div className="space-y-2 flex-1">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{user.username || user.email}</span>
+              <Card key={user.user_id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex flex-col gap-3">
+                    {/* User info */}
+                    <div className="flex items-start gap-3">
+                      <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5">
+                        <Users className="h-5 w-5 text-primary" />
                       </div>
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
-                      
-                      <div className="flex flex-wrap items-center gap-2 mt-2">
-                        <Badge variant={variant} className="flex items-center gap-1">
-                          <StatusIcon className="h-3 w-3" />
-                          {status}
-                        </Badge>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">{user.username || user.email}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                         
-                        <Badge variant="outline" className="text-xs">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          Bergabung {formatDistanceToNow(new Date(user.created_at), { 
-                            addSuffix: true, 
-                            locale: localeId 
-                          })}
-                        </Badge>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                          <Badge variant={variant} className="flex items-center gap-1 text-xs px-2 py-0.5">
+                            <StatusIcon className="h-3 w-3" />
+                            {status}
+                          </Badge>
+                          
+                          <Badge variant="outline" className="text-[10px] px-2 py-0.5">
+                            <Calendar className="h-2.5 w-2.5 mr-1" />
+                            {formatDistanceToNow(new Date(user.created_at), { 
+                              addSuffix: true, 
+                              locale: localeId 
+                            })}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    {/* Actions */}
+                    <div className="flex gap-2">
                       <Select
                         value={duration}
                         onValueChange={setDuration}
                       >
-                        <SelectTrigger className="w-[140px]">
+                        <SelectTrigger className="h-9 flex-1 text-sm rounded-lg">
                           <SelectValue placeholder="Durasi" />
                         </SelectTrigger>
                         <SelectContent>
@@ -239,9 +235,10 @@ export const SubscriptionManagement = () => {
                           setShowExtendDialog(true);
                         }}
                         size="sm"
+                        className="h-9 px-3 rounded-lg"
                       >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Perpanjang
+                        <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                        <span className="text-xs">Perpanjang</span>
                       </Button>
                     </div>
                   </div>
@@ -250,6 +247,7 @@ export const SubscriptionManagement = () => {
             );
           })
         )}
+      </div>
       </div>
 
       {/* Extend Dialog */}

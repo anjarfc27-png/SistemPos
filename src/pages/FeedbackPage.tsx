@@ -68,9 +68,10 @@ export const FeedbackPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 safe-top safe-bottom">
+    <div className="min-h-screen bg-background safe-top safe-bottom">
+      <div className="p-4">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-6 pt-4">
         <Button 
           variant="ghost" 
           size="icon"
@@ -151,6 +152,7 @@ export const FeedbackPage = () => {
           </p>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
