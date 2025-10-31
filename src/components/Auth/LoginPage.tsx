@@ -18,7 +18,7 @@ import kasirqLogo from '@/assets/kasirq-logo.png';
 
 export const LoginPage = () => {
   const { signIn, signInWithUsername, signUp, loading, user } = useAuth();
-  const { currentStore } = useStore();
+  const { currentStore, stores, loading: storeLoading } = useStore();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [adminContacts, setAdminContacts] = useState<{ whatsapp?: string; instagram?: string }>({});
@@ -181,8 +181,8 @@ export const LoginPage = () => {
     navigate('/');
   };
 
-  // Show store selector if user is logged in but no store selected yet
-  if (user && !currentStore) {
+  // Show store selector only after stores are loaded and there's no store
+  if (user && !storeLoading && stores.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="w-full max-w-4xl">
@@ -192,8 +192,8 @@ export const LoginPage = () => {
     );
   }
 
-  // If user is logged in and has a store, redirect to main page
-  if (user && currentStore) {
+  // If user is logged in and stores are loaded (with or without selection), redirect to main page
+  if (user && !storeLoading && (currentStore || stores.length > 0)) {
     navigate('/');
     return null;
   }
@@ -389,33 +389,6 @@ export const LoginPage = () => {
           </Tabs>
         </CardContent>
       </Card>
-
-      {/* Floating Contact Buttons */}
-      {(adminContacts.whatsapp || adminContacts.instagram) && (
-        <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
-          {adminContacts.whatsapp && (
-            <Button
-              onClick={handleWhatsAppContact}
-              size="lg"
-              className="rounded-full h-14 w-14 shadow-lg hover:scale-110 transition-transform"
-              title="Hubungi via WhatsApp"
-            >
-              <MessageCircle className="h-6 w-6" />
-            </Button>
-          )}
-          {adminContacts.instagram && (
-            <Button
-              onClick={handleInstagramContact}
-              size="lg"
-              variant="outline"
-              className="rounded-full h-14 w-14 shadow-lg hover:scale-110 transition-transform"
-              title="Hubungi via Instagram"
-            >
-              <Instagram className="h-6 w-6" />
-            </Button>
-          )}
-        </div>
-      )}
     </div>
   );
 };

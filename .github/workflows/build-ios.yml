@@ -109,7 +109,7 @@ EOF
     - name: Install CocoaPods dependencies
       run: |
         cd ios/App
-        pod install --repo-update --deployment
+        pod install --repo-update
     
     - name: Build iOS app
       run: |
