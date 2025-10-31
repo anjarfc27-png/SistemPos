@@ -28,10 +28,7 @@ jobs:
         xcode-version: '15.4'
     
     - name: Install dependencies
-      run: |
-        npm ci --legacy-peer-deps
-        # Downgrade barcode scanning to compatible version
-        npm install @capacitor-mlkit/barcode-scanning@6.1.0 --legacy-peer-deps
+      run: npm ci --legacy-peer-deps
     
     
     - name: Create .env file
@@ -53,35 +50,27 @@ jobs:
     - name: Add iOS platform
       run: npx cap add ios
     
-    - name: Configure iOS Deployment Target
+    - name: Update Podfile deployment target
       run: |
         cd ios/App
+        # Update to iOS 14.0 (minimum for Capacitor 7.x)
+        sed -i.bak "s/platform :ios, '[0-9.]*'/platform :ios, '14.0'/" Podfile
         
-        # Update Podfile to use iOS 13.0 (compatible with barcode-scanning 6.1.0)
-        cat > Podfile << 'EOF'
-        platform :ios, '13.0'
-        use_frameworks!
+        # Add post_install hook to set deployment target
+        if ! grep -q "post_install do |installer|" Podfile; then
+          cat >> Podfile << 'EOF'
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+    end
+  end
+end
+EOF
+        fi
         
-        def capacitor_pods
-          pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
-          pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
-        end
-        
-        target 'App' do
-          capacitor_pods
-          # Add your Pods here
-        end
-        
-        post_install do |installer|
-          installer.pods_project.targets.each do |target|
-            target.build_configurations.each do |config|
-              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
-            end
-          end
-        end
-        EOF
-        
-        echo "✅ Podfile configured"
+        echo "✅ Updated Podfile:"
         cat Podfile
     
     
@@ -120,7 +109,7 @@ jobs:
     - name: Install CocoaPods dependencies
       run: |
         cd ios/App
-        pod install --repo-update
+        pod install --repo-update --deployment
     
     - name: Build iOS app
       run: |
