@@ -49,6 +49,18 @@ jobs:
     - name: Add iOS platform
       run: npx cap add ios
     
+    - name: Update iOS Deployment Target
+      run: |
+        # Update deployment target to iOS 15.5 (required by GoogleMLKit)
+        PODFILE_PATH="ios/App/Podfile"
+        echo "platform :ios, '15.5'" > $PODFILE_PATH.tmp
+        tail -n +2 $PODFILE_PATH >> $PODFILE_PATH.tmp
+        mv $PODFILE_PATH.tmp $PODFILE_PATH
+        
+        # Update project.pbxproj deployment target
+        PROJECT_FILE="ios/App/App.xcodeproj/project.pbxproj"
+        sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]*/IPHONEOS_DEPLOYMENT_TARGET = 15.5/g' $PROJECT_FILE
+    
     - name: Update Info.plist with Camera & Bluetooth Permissions
       run: |
         PLIST_PATH="ios/App/App/Info.plist"
