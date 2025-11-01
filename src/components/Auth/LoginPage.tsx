@@ -8,20 +8,30 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import { Store } from '@/types/store';
-import { MessageCircle, Instagram, Eye, EyeOff } from 'lucide-react';
+import { MessageCircle, Instagram, Eye, EyeOff, Fingerprint } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import kasirqLogo from '@/assets/kasirq-logo.png';
+import { secureStorage } from '@/lib/secure-storage';
+import { biometricAuth } from '@/lib/biometric-auth';
+import { Capacitor } from '@capacitor/core';
+import { BiometryType } from '@aparajita/capacitor-biometric-auth';
 
 export const LoginPage = () => {
-  const { signIn, signInWithUsername, signUp, loading, user } = useAuth();
+  const { signIn, signInWithUsername, signUp, loading, user, biometricLogin, checkBiometricAvailable, enableBiometric, isBiometricEnabled } = useAuth();
   const { currentStore, stores, loading: storeLoading } = useStore();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [adminContacts, setAdminContacts] = useState<{ whatsapp?: string; instagram?: string }>({});
+  const [rememberMe, setRememberMe] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometryType, setBiometryType] = useState<BiometryType | null>(null);
+  const [showBiometricPrompt, setShowBiometricPrompt] = useState(false);
   
   const [loginData, setLoginData] = useState({
     identifier: '',
@@ -40,6 +50,37 @@ export const LoginPage = () => {
   const [showStoreSelector, setShowStoreSelector] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Check biometric and load saved data
+  useEffect(() => {
+    const init = async () => {
+      // Check biometric availability
+      if (Capacitor.isNativePlatform()) {
+        const available = await checkBiometricAvailable();
+        setBiometricAvailable(available);
+        
+        if (available) {
+          const enabled = await isBiometricEnabled();
+          setBiometricEnabled(enabled);
+          const type = await biometricAuth.getBiometryType();
+          setBiometryType(type);
+        }
+      }
+
+      // Load saved identifier if remember me was enabled
+      const savedRememberMe = await secureStorage.getRememberMe();
+      setRememberMe(savedRememberMe);
+      
+      if (savedRememberMe) {
+        const savedIdentifier = await secureStorage.getSavedIdentifier();
+        if (savedIdentifier) {
+          setLoginData(prev => ({ ...prev, identifier: savedIdentifier }));
+        }
+      }
+    };
+
+    init();
+  }, []);
 
   // Fetch admin contact info
   useEffect(() => {
@@ -89,8 +130,8 @@ export const LoginPage = () => {
     const isEmail = loginData.identifier.includes('@');
     
     const { error } = isEmail 
-      ? await signIn(loginData.identifier, loginData.password)
-      : await signInWithUsername(loginData.identifier, loginData.password);
+      ? await signIn(loginData.identifier, loginData.password, rememberMe)
+      : await signInWithUsername(loginData.identifier, loginData.password, rememberMe);
     
     // Dismiss loading
     sonnerToast.dismiss('login-loading');
@@ -111,9 +152,45 @@ export const LoginPage = () => {
       }
       setErrors(errorMessage);
     } else {
-      // Show store selector after successful login
+      // Prompt for biometric setup if available and not enabled
+      if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+        setShowBiometricPrompt(true);
+      } else {
+        setShowStoreSelector(true);
+      }
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    setErrors('');
+    sonnerToast.loading('Memverifikasi biometrik...', { id: 'biometric-loading' });
+    
+    const { error } = await biometricLogin();
+    
+    sonnerToast.dismiss('biometric-loading');
+    
+    if (error) {
+      setErrors(error.message || 'Login biometrik gagal');
+    } else {
       setShowStoreSelector(true);
     }
+  };
+
+  const handleEnableBiometric = async () => {
+    try {
+      await enableBiometric(loginData.identifier, loginData.password);
+      setBiometricEnabled(true);
+      setShowBiometricPrompt(false);
+      sonnerToast.success('Biometrik berhasil diaktifkan!');
+      setShowStoreSelector(true);
+    } catch (error) {
+      sonnerToast.error('Gagal mengaktifkan biometrik');
+    }
+  };
+
+  const handleSkipBiometric = () => {
+    setShowBiometricPrompt(false);
+    setShowStoreSelector(true);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -198,6 +275,33 @@ export const LoginPage = () => {
     return null;
   }
 
+  // Biometric setup prompt
+  if (showBiometricPrompt) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10 p-4">
+        <Card className="w-full max-w-md shadow-2xl border-0">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 text-6xl">
+              {biometricAuth.getBiometricIcon(biometryType)}
+            </div>
+            <CardTitle className="text-2xl">Aktifkan {biometricAuth.getBiometricLabel(biometryType)}?</CardTitle>
+            <CardDescription className="text-base">
+              Login lebih cepat dengan {biometricAuth.getBiometricLabel(biometryType)} di perangkat Anda
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button onClick={handleEnableBiometric} className="w-full h-12 text-base">
+              Aktifkan Sekarang
+            </Button>
+            <Button onClick={handleSkipBiometric} variant="outline" className="w-full h-12 text-base">
+              Tidak, Terima Kasih
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10 p-4">
       <Card className="w-full max-w-md shadow-2xl border-0 overflow-hidden">
@@ -259,6 +363,21 @@ export const LoginPage = () => {
                     </Button>
                   </div>
                 </div>
+
+                {/* Remember Me Checkbox */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="remember" 
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  />
+                  <Label 
+                    htmlFor="remember" 
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    Ingat Saya
+                  </Label>
+                </div>
                 
                 {errors && (
                   <div className="bg-error/10 text-error text-sm p-3 rounded-xl border border-error/20">
@@ -269,6 +388,19 @@ export const LoginPage = () => {
                 <Button type="submit" className="w-full h-12 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all" disabled={loading}>
                   {loading ? 'Masuk...' : 'Masuk'}
                 </Button>
+
+                {/* Biometric Login Button */}
+                {biometricEnabled && biometricAvailable && (
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    className="w-full h-12 rounded-xl font-semibold text-base border-2"
+                    onClick={handleBiometricLogin}
+                  >
+                    <Fingerprint className="mr-2 h-5 w-5" />
+                    Login dengan {biometricAuth.getBiometricLabel(biometryType)}
+                  </Button>
+                )}
               </form>
             </TabsContent>
             

@@ -1,12 +1,14 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { secureStorage } from '@/lib/secure-storage';
+import { biometricAuth } from '@/lib/biometric-auth';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  signIn: (email: string, password: string) => Promise<{ error?: any }>;
-  signInWithUsername: (username: string, password: string) => Promise<{ error?: any }>;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ error?: any }>;
+  signInWithUsername: (username: string, password: string, rememberMe?: boolean) => Promise<{ error?: any }>;
   signUp: (email: string, username: string, password: string, whatsapp?: string) => Promise<{ error?: any }>;
   signOut: () => Promise<void>;
   verifyAdminPassword: (password: string) => Promise<boolean>;
@@ -16,6 +18,10 @@ interface AuthContextType {
   isAdminCheckComplete: boolean;
   isSubscriptionExpired: boolean;
   subscriptionExpiredAt: string | null;
+  biometricLogin: () => Promise<{ error?: any }>;
+  checkBiometricAvailable: () => Promise<boolean>;
+  enableBiometric: (identifier: string, password: string) => Promise<void>;
+  isBiometricEnabled: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -186,7 +192,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, rememberMe: boolean = false) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -194,13 +200,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     if (error) return { error };
     
-    // User approval will be checked by ProtectedRoute
-    // So we don't block login here, just let them in
+    // Save credentials if remember me is enabled
+    if (rememberMe) {
+      await secureStorage.setRememberMe(true);
+      await secureStorage.setSavedIdentifier(email);
+    }
     
     return { error };
   };
 
-  const signInWithUsername = async (username: string, password: string) => {
+  const signInWithUsername = async (username: string, password: string, rememberMe: boolean = false) => {
     // Use RPC with SECURITY DEFINER to bypass RLS when not authenticated
     const { data, error } = await supabase.rpc('get_user_by_username_or_email', {
       identifier: username,
@@ -215,7 +224,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: { message: 'Username tidak ditemukan' } };
     }
 
-    return signIn(record.email as string, password);
+    const result = await signIn(record.email as string, password, rememberMe);
+    
+    // If remember me and login success, save username instead of email
+    if (rememberMe && !result.error) {
+      await secureStorage.setSavedIdentifier(username);
+    }
+    
+    return result;
   };
 
   const signOut = async () => {
@@ -223,6 +239,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clear all local state first
       setUser(null);
       setSession(null);
+      
+      // Clear secure storage
+      await secureStorage.clearAll();
       
       // Clear any local storage/session storage data
       localStorage.clear();
@@ -251,6 +270,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return password === '122344566';
   };
 
+  const checkBiometricAvailable = async (): Promise<boolean> => {
+    return await biometricAuth.isAvailable();
+  };
+
+  const isBiometricEnabled = async (): Promise<boolean> => {
+    return await secureStorage.getBiometricEnabled();
+  };
+
+  const enableBiometric = async (identifier: string, password: string) => {
+    await secureStorage.setBiometricEnabled(true);
+    await secureStorage.saveCredentials(identifier, password);
+  };
+
+  const biometricLogin = async () => {
+    const isAvailable = await biometricAuth.isAvailable();
+    if (!isAvailable) {
+      return { error: { message: 'Biometrik tidak tersedia di perangkat ini' } };
+    }
+
+    const isEnabled = await secureStorage.getBiometricEnabled();
+    if (!isEnabled) {
+      return { error: { message: 'Biometrik belum diaktifkan' } };
+    }
+
+    const authenticated = await biometricAuth.authenticate('Login ke KasirQ');
+    if (!authenticated) {
+      return { error: { message: 'Autentikasi biometrik gagal' } };
+    }
+
+    const credentials = await secureStorage.getCredentials();
+    if (!credentials) {
+      return { error: { message: 'Kredensial tidak ditemukan' } };
+    }
+
+    // Login using saved credentials
+    const isEmail = credentials.identifier.includes('@');
+    return isEmail 
+      ? await signIn(credentials.identifier, credentials.password)
+      : await signInWithUsername(credentials.identifier, credentials.password);
+  };
+
   const value = {
     user,
     session,
@@ -265,6 +325,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAdminCheckComplete,
     isSubscriptionExpired,
     subscriptionExpiredAt,
+    biometricLogin,
+    checkBiometricAvailable,
+    enableBiometric,
+    isBiometricEnabled,
   };
 
   return (
