@@ -600,7 +600,7 @@ Profit: ${formatPrice(receipt.profit)}
       </header>
 
       {/* Dashboard Stats - with proper spacing from fixed header */}
-      <div className="w-full px-2 sm:px-4 pt-40 sm:pt-44 pb-2 sm:pb-4 safe-top">
+      <div className="w-full px-2 sm:px-4 pt-40 sm:pt-44 pb-2 sm:pb-4">
         <div className="grid grid-cols-1 gap-2 sm:gap-4 mb-4 sm:mb-6">
           {/* Full width card on top */}
           <Card className="pos-card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleDashboardClick('revenue')}>
