@@ -22,7 +22,7 @@ import { Capacitor } from '@capacitor/core';
 import { BiometryType } from '@aparajita/capacitor-biometric-auth';
 
 export const LoginPage = () => {
-  const { signIn, signInWithUsername, signUp, loading, user, biometricLogin, checkBiometricAvailable, enableBiometric, isBiometricEnabled } = useAuth();
+  const { signIn, signInWithUsername, signUp, loading, user, biometricLogin, checkBiometricAvailable, enableBiometric, isBiometricEnabled, isAdmin } = useAuth();
   const { currentStore, stores, loading: storeLoading } = useStore();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -255,7 +255,14 @@ export const LoginPage = () => {
   };
 
   const handleStoreSelected = (store: Store) => {
-    navigate('/');
+    sonnerToast.success(`Toko "${store.name}" aktif!`);
+    
+    // Redirect based on user role
+    if (isAdmin) {
+      navigate('/dashboard');
+    } else {
+      navigate('/pos');
+    }
   };
 
   // Show store selector only after stores are loaded and there's no store

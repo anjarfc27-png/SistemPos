@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Store, StoreCategory, STORE_CATEGORIES } from '@/types/store';
 import { useStore } from '@/contexts/StoreContext';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ export const StoreSelector = ({ onStoreSelected }: StoreSelectorProps) => {
 
   const handleStoreSelect = (store: Store) => {
     setCurrentStore(store);
+    toast.success(`Toko "${store.name}" berhasil dipilih!`);
     onStoreSelected?.(store);
   };
 

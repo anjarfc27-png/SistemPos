@@ -124,10 +124,12 @@ jobs:
           
           ✨ **Fitur Terbaru:**
           - ✅ Fitur "Ingat Saya" untuk auto-fill login
-          - ✅ Autentikasi biometrik (fingerprint/Face ID)
-          - ✅ Header spacing yang lebih compact di mobile & native app
-          - ✅ Permission kamera untuk barcode scanner
-          - ✅ Fixed header position di native app
+          - ✅ Autentikasi biometrik (fingerprint/Face ID) dengan tombol di samping password
+          - ✅ Auto-redirect setelah login berdasarkan role user (admin/kasir)
+          - ✅ Fixed redirect logic untuk user yang sudah punya toko
+          - ✅ Toast notification saat memilih toko
+          - ✅ Header spacing yang optimal di native app (tidak menutupi konten)
+          - ✅ Permission lengkap untuk kamera, biometric, dan bluetooth
           - ✅ Fixed layout mobile reports page
           - ✅ WhatsApp share dengan gambar
           - ✅ Grafik analytics tanpa legend
