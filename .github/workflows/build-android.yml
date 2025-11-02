@@ -62,7 +62,7 @@ jobs:
         cp $MANIFEST_PATH ${MANIFEST_PATH}.backup
         
         # Inject permissions before </manifest>
-        sed -i 's|</manifest>|\n    <!-- Camera permissions for barcode scanner -->\n    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    \n    <!-- Bluetooth permissions for thermal printer -->\n    <uses-permission android:name="android.permission.BLUETOOTH" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />\n    \n    <!-- Camera features -->\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />\n    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />\n\n</manifest>|' $MANIFEST_PATH
+        sed -i 's|</manifest>|\n    <!-- Camera permissions for barcode scanner -->\n    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    \n    <!-- Biometric authentication permissions -->\n    <uses-permission android:name="android.permission.USE_BIOMETRIC" />\n    <uses-permission android:name="android.permission.USE_FINGERPRINT" />\n    \n    <!-- Bluetooth permissions for thermal printer -->\n    <uses-permission android:name="android.permission.BLUETOOTH" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />\n    \n    <!-- Camera features -->\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />\n    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />\n    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />\n\n</manifest>|' $MANIFEST_PATH
         
         # Inject ML Kit metadata before </application>
         sed -i 's|</application>|        <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />\n    </application>|' $MANIFEST_PATH
@@ -123,6 +123,9 @@ jobs:
           Commit: ${{ github.sha }}
           
           ✨ **Fitur Terbaru:**
+          - ✅ Fitur "Ingat Saya" untuk auto-fill login
+          - ✅ Autentikasi biometrik (fingerprint/Face ID)
+          - ✅ Header spacing yang lebih compact di mobile & native app
           - ✅ Permission kamera untuk barcode scanner
           - ✅ Fixed header position di native app
           - ✅ Fixed layout mobile reports page
