@@ -346,13 +346,19 @@ export const LoginPage = () => {
                       value={loginData.password}
                       onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                       required
-                      className="h-12 rounded-xl border-2 focus:border-primary transition-all pr-10"
+                      className={`h-12 rounded-xl border-2 focus:border-primary transition-all ${
+                        biometricEnabled && biometricAvailable ? 'pr-20' : 'pr-10'
+                      }`}
                     />
+                    
+                    {/* Show/Hide Password Button */}
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      className={`absolute top-0 h-full px-3 hover:bg-transparent ${
+                        biometricEnabled && biometricAvailable ? 'right-10' : 'right-0'
+                      }`}
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
@@ -361,6 +367,20 @@ export const LoginPage = () => {
                         <Eye className="h-4 w-4 text-muted-foreground" />
                       )}
                     </Button>
+
+                    {/* Biometric Button - Small icon in field */}
+                    {biometricEnabled && biometricAvailable && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        onClick={handleBiometricLogin}
+                        title={`Login dengan ${biometricAuth.getBiometricLabel(biometryType)}`}
+                      >
+                        <Fingerprint className="h-5 w-5 text-primary" />
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -388,19 +408,6 @@ export const LoginPage = () => {
                 <Button type="submit" className="w-full h-12 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all" disabled={loading}>
                   {loading ? 'Masuk...' : 'Masuk'}
                 </Button>
-
-                {/* Biometric Login Button */}
-                {biometricEnabled && biometricAvailable && (
-                  <Button 
-                    type="button"
-                    variant="outline" 
-                    className="w-full h-12 rounded-xl font-semibold text-base border-2"
-                    onClick={handleBiometricLogin}
-                  >
-                    <Fingerprint className="mr-2 h-5 w-5" />
-                    Login dengan {biometricAuth.getBiometricLabel(biometryType)}
-                  </Button>
-                )}
               </form>
             </TabsContent>
             
