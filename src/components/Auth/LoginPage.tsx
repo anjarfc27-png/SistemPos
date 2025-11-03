@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
 import { StoreSelector } from '@/components/Store/StoreSelector';
+import { LoadingScreen } from '@/components/Auth/LoadingScreen';
+import { BiometricButton } from '@/components/Auth/BiometricButton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -51,6 +53,10 @@ export const LoginPage = () => {
   const [showStoreSelector, setShowStoreSelector] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Loading states untuk proper loading screen
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Check biometric and load saved data
   useEffect(() => {
@@ -123,101 +129,171 @@ export const LoginPage = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors('');
+    setIsRedirecting(true);
+    setLoadingProgress(0);
+    setLoadingMessage('Memeriksa akun');
     
-    // Show loading toast
-    sonnerToast.loading('Memeriksa akun...', { id: 'login-loading' });
-    
-    // Detect if input is email or username
-    const isEmail = loginData.identifier.includes('@');
-    
-    const { error } = isEmail 
-      ? await signIn(loginData.identifier, loginData.password, rememberMe)
-      : await signInWithUsername(loginData.identifier, loginData.password, rememberMe);
-    
-    // Dismiss loading
-    sonnerToast.dismiss('login-loading');
+    try {
+      // Step 1: Authenticate (0-40%)
+      const isEmail = loginData.identifier.includes('@');
+      const { error } = isEmail 
+        ? await signIn(loginData.identifier, loginData.password, rememberMe)
+        : await signInWithUsername(loginData.identifier, loginData.password, rememberMe);
       
-    if (error) {
-      // Convert error messages to Indonesian
-      let errorMessage = 'Login gagal';
-      if (error.message?.includes('Invalid login credentials')) {
-        errorMessage = 'Email/Username atau password salah';
-      } else if (error.message?.includes('Email not confirmed')) {
-        errorMessage = 'Email belum dikonfirmasi. Silakan cek email Anda';
-      } else if (error.message?.includes('menunggu persetujuan')) {
-        // Redirect to waiting approval page
-        navigate('/waiting-approval');
-        return;
-      } else if (error.message?.includes('Username tidak ditemukan')) {
-        errorMessage = 'Username tidak ditemukan';
-      }
-      setErrors(errorMessage);
-    } else {
-      // ✅ Login sukses - set redirecting state
-      setIsRedirecting(true);
-      
-      // ✅ Tunggu sebentar untuk memastikan StoreContext selesai update
-      setTimeout(() => {
-        if (currentStore) {
-          // User sudah punya store aktif → redirect langsung
-          if (isAdmin) {
-            navigate('/dashboard');
-          } else {
-            navigate('/pos');
-          }
-          
-          // Prompt biometric SETELAH redirect
-          if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
-            setTimeout(() => setShowBiometricPrompt(true), 500);
-          }
-        } else if (stores.length > 0) {
-          // Stores loaded tapi currentStore belum set → paksa set
-          setCurrentStore(stores[0]);
-          
-          if (isAdmin) {
-            navigate('/dashboard');
-          } else {
-            navigate('/pos');
-          }
-          
-          if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
-            setTimeout(() => setShowBiometricPrompt(true), 500);
-          }
-        } else {
-          // User belum punya store sama sekali
-          if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
-            setShowBiometricPrompt(true);
-          } else {
-            setShowStoreSelector(true);
-          }
+      if (error) {
+        // Convert error messages to Indonesian
+        let errorMessage = 'Login gagal';
+        if (error.message?.includes('Invalid login credentials')) {
+          errorMessage = 'Email/Username atau password salah';
+        } else if (error.message?.includes('Email not confirmed')) {
+          errorMessage = 'Email belum dikonfirmasi. Silakan cek email Anda';
+        } else if (error.message?.includes('menunggu persetujuan')) {
+          navigate('/waiting-approval');
+          return;
+        } else if (error.message?.includes('Username tidak ditemukan')) {
+          errorMessage = 'Username tidak ditemukan';
         }
-      }, 150); // 150ms delay untuk StoreContext selesai update
-    }
-  };
-
-  const handleBiometricLogin = async () => {
-    setErrors('');
-    sonnerToast.loading('Memverifikasi biometrik...', { id: 'biometric-loading' });
-    
-    const { error } = await biometricLogin();
-    
-    sonnerToast.dismiss('biometric-loading');
-    
-    if (error) {
-      setErrors(error.message || 'Login biometrik gagal');
-    } else {
-      // ✅ Check stores dan navigate accordingly
+        setErrors(errorMessage);
+        setIsRedirecting(false);
+        return;
+      }
+      
+      setLoadingProgress(40);
+      setLoadingMessage('Memuat data toko');
+      
+      // Step 2: Wait for stores to load properly (40-80%)
+      let attempts = 0;
+      const maxAttempts = 20; // 10 seconds max
+      
+      while (storeLoading && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        attempts++;
+        setLoadingProgress(40 + (attempts * 2));
+      }
+      
+      setLoadingProgress(80);
+      setLoadingMessage('Menyiapkan dashboard');
+      
+      // Step 3: Final checks & redirect (80-100%)
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setLoadingProgress(100);
+      
+      // Save credentials for biometric if enabled
+      if (biometricEnabled) {
+        await secureStorage.saveCredentials(loginData.identifier, loginData.password);
+      }
+      
+      // Redirect logic
       if (currentStore) {
         if (isAdmin) {
           navigate('/dashboard');
         } else {
           navigate('/pos');
         }
+        
+        // Prompt biometric after redirect
+        if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+          setTimeout(() => setShowBiometricPrompt(true), 500);
+        }
       } else if (stores.length > 0) {
-        setShowStoreSelector(true);
+        setCurrentStore(stores[0]);
+        
+        if (isAdmin) {
+          navigate('/dashboard');
+        } else {
+          navigate('/pos');
+        }
+        
+        if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+          setTimeout(() => setShowBiometricPrompt(true), 500);
+        }
       } else {
-        setShowStoreSelector(true);
+        if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+          setShowBiometricPrompt(true);
+        } else {
+          setShowStoreSelector(true);
+        }
       }
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors('Terjadi kesalahan saat login');
+      setIsRedirecting(false);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    if (!biometricEnabled) {
+      sonnerToast.info('Login terlebih dahulu untuk mengaktifkan biometrik');
+      return;
+    }
+    
+    setErrors('');
+    setIsRedirecting(true);
+    setLoadingProgress(0);
+    setLoadingMessage('Verifikasi biometrik');
+    
+    try {
+      const authenticated = await biometricAuth.authenticate('Login ke KasirQ');
+      
+      if (authenticated) {
+        setLoadingProgress(30);
+        const credentials = await secureStorage.getCredentials();
+        
+        if (credentials) {
+          setLoadingProgress(50);
+          setLoadingMessage('Memeriksa akun');
+          
+          const isEmail = credentials.identifier.includes('@');
+          const { error } = isEmail
+            ? await signIn(credentials.identifier, credentials.password, true)
+            : await signInWithUsername(credentials.identifier, credentials.password, true);
+          
+          if (error) {
+            setErrors('Biometric login gagal');
+            setIsRedirecting(false);
+          } else {
+            setLoadingProgress(70);
+            setLoadingMessage('Memuat data toko');
+            
+            // Wait for stores
+            let attempts = 0;
+            while (storeLoading && attempts < 20) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+              attempts++;
+            }
+            
+            setLoadingProgress(100);
+            
+            // Redirect
+            if (currentStore) {
+              if (isAdmin) {
+                navigate('/dashboard');
+              } else {
+                navigate('/pos');
+              }
+            } else if (stores.length > 0) {
+              setCurrentStore(stores[0]);
+              if (isAdmin) {
+                navigate('/dashboard');
+              } else {
+                navigate('/pos');
+              }
+            } else {
+              setShowStoreSelector(true);
+            }
+          }
+        } else {
+          setErrors('Kredensial tidak ditemukan. Login manual terlebih dahulu.');
+          setIsRedirecting(false);
+        }
+      } else {
+        setIsRedirecting(false);
+      }
+    } catch (error) {
+      console.error('Biometric login error:', error);
+      setErrors('Biometric login gagal');
+      setIsRedirecting(false);
     }
   };
 
@@ -354,16 +430,9 @@ export const LoginPage = () => {
     return null;
   }
 
-  // Loading state saat redirect
+  // Loading state saat redirect - menggunakan LoadingScreen component
   if (isRedirecting) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
-          <p className="text-base font-medium text-muted-foreground">Memuat dashboard...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message={loadingMessage} progress={loadingProgress} />;
   }
 
   // Biometric setup prompt
@@ -430,47 +499,43 @@ export const LoginPage = () => {
                 </div>
                 <div>
                   <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
-                  <div className="relative mt-2">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      value={loginData.password}
-                      onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                      required
-                      className={`h-12 rounded-xl border-2 focus:border-primary transition-all ${
-                        biometricEnabled && biometricAvailable ? 'pr-20' : 'pr-10'
-                      }`}
-                    />
-                    
-                    {/* Show/Hide Password Button */}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={`absolute top-0 h-full px-3 hover:bg-transparent ${
-                        biometricEnabled && biometricAvailable ? 'right-10' : 'right-0'
-                      }`}
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </Button>
-
-                    {/* Biometric Button - Small icon in field */}
-                    {biometricEnabled && biometricAvailable && (
+                  <div className="flex gap-0 mt-2">
+                    <div className="relative flex-1">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={loginData.password}
+                        onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                        required
+                        className={`h-12 border-2 focus:border-primary transition-all pr-10 ${
+                          biometricAvailable ? 'rounded-l-xl rounded-r-none border-r-0' : 'rounded-xl'
+                        }`}
+                      />
+                      
+                      {/* Show/Hide Password Button */}
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-primary/10 group transition-all"
-                        onClick={handleBiometricLogin}
-                        title={`Login dengan ${biometricAuth.getBiometricLabel(biometryType)}`}
+                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
                       >
-                        <Fingerprint className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
                       </Button>
+                    </div>
+                    
+                    {/* Biometric Button - Samping field seperti BRImo */}
+                    {biometricAvailable && (
+                      <BiometricButton
+                        biometryType={biometryType}
+                        isEnabled={biometricEnabled}
+                        isLoading={loading}
+                        onClick={handleBiometricLogin}
+                      />
                     )}
                   </div>
                 </div>
@@ -500,38 +565,10 @@ export const LoginPage = () => {
                   {loading ? 'Masuk...' : 'Masuk'}
                 </Button>
 
-                {/* TOMBOL BIOMETRIK STANDALONE */}
-                {biometricEnabled && biometricAvailable && (
-                  <>
-                    {/* Divider "atau" */}
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">
-                          atau
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Tombol Login Biometrik */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full h-12 text-base rounded-xl font-semibold border-2 hover:bg-primary/5 hover:border-primary transition-all"
-                      onClick={handleBiometricLogin}
-                    >
-                      <Fingerprint className="h-5 w-5 mr-2" />
-                      Login dengan {biometricAuth.getBiometricLabel(biometryType)}
-                    </Button>
-                  </>
-                )}
-
                 {/* Info jika biometrik available tapi belum enabled */}
                 {!biometricEnabled && biometricAvailable && (
-                  <div className="text-center text-sm text-muted-foreground mt-2">
-                    💡 Login dulu untuk mengaktifkan {biometricAuth.getBiometricLabel(biometryType)}
+                  <div className="text-center text-sm text-muted-foreground">
+                    💡 Klik icon {biometricAuth.getBiometricIcon(biometryType)} setelah login pertama untuk aktifkan biometrik
                   </div>
                 )}
               </form>
