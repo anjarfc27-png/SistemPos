@@ -125,8 +125,9 @@ jobs:
           ✨ **Fitur Terbaru:**
           - ✅ Fitur "Ingat Saya" untuk auto-fill login
           - ✅ Autentikasi biometrik (fingerprint/Face ID) dengan tombol di samping password
-          - ✅ Auto-redirect setelah login berdasarkan role user (admin/kasir)
-          - ✅ Fixed redirect logic untuk user yang sudah punya toko
+          - ✅ **FIXED: Biometric enable/login sekarang auto-redirect ke dashboard/POS**
+          - ✅ **FIXED: Tidak ada lagi flash halaman toko setelah login**
+          - ✅ Auto-redirect setelah login berdasarkan role user (admin → dashboard, kasir → POS)
           - ✅ Toast notification saat memilih toko
           - ✅ Header spacing yang optimal di native app (tidak menutupi konten)
           - ✅ Permission lengkap untuk kamera, biometric, dan bluetooth

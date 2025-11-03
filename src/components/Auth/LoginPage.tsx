@@ -152,11 +152,31 @@ export const LoginPage = () => {
       }
       setErrors(errorMessage);
     } else {
-      // Prompt for biometric setup if available and not enabled
-      if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
-        setShowBiometricPrompt(true);
+      // ✅ Login sukses
+      
+      // ✅ Check currentStore DULU untuk prevent flash
+      if (currentStore) {
+        // User sudah punya store aktif → langsung redirect
+        if (isAdmin) {
+          navigate('/dashboard');
+        } else {
+          navigate('/pos');
+        }
+        
+        // Prompt biometric SETELAH redirect (akan muncul di page berikutnya)
+        if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+          setTimeout(() => setShowBiometricPrompt(true), 500);
+        }
       } else {
-        setShowStoreSelector(true);
+        // User belum punya store aktif
+        
+        // Prompt biometric dulu jika available
+        if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+          setShowBiometricPrompt(true);
+        } else {
+          // Langsung show store selector jika biometric tidak available/sudah enabled
+          setShowStoreSelector(true);
+        }
       }
     }
   };
@@ -172,7 +192,18 @@ export const LoginPage = () => {
     if (error) {
       setErrors(error.message || 'Login biometrik gagal');
     } else {
-      setShowStoreSelector(true);
+      // ✅ Check stores dan navigate accordingly
+      if (currentStore) {
+        if (isAdmin) {
+          navigate('/dashboard');
+        } else {
+          navigate('/pos');
+        }
+      } else if (stores.length > 0) {
+        setShowStoreSelector(true);
+      } else {
+        setShowStoreSelector(true);
+      }
     }
   };
 
@@ -182,7 +213,22 @@ export const LoginPage = () => {
       setBiometricEnabled(true);
       setShowBiometricPrompt(false);
       sonnerToast.success('Biometrik berhasil diaktifkan!');
-      setShowStoreSelector(true);
+      
+      // ✅ Explicit navigation berdasarkan stores dan role
+      if (currentStore) {
+        // User sudah punya store aktif → redirect langsung
+        if (isAdmin) {
+          navigate('/dashboard');
+        } else {
+          navigate('/pos');
+        }
+      } else if (stores.length > 0) {
+        // User punya stores tapi belum pilih → show selector
+        setShowStoreSelector(true);
+      } else {
+        // User belum punya stores → show selector untuk buat
+        setShowStoreSelector(true);
+      }
     } catch (error) {
       sonnerToast.error('Gagal mengaktifkan biometrik');
     }
@@ -190,7 +236,19 @@ export const LoginPage = () => {
 
   const handleSkipBiometric = () => {
     setShowBiometricPrompt(false);
-    setShowStoreSelector(true);
+    
+    // ✅ Same logic sebagai enable
+    if (currentStore) {
+      if (isAdmin) {
+        navigate('/dashboard');
+      } else {
+        navigate('/pos');
+      }
+    } else if (stores.length > 0) {
+      setShowStoreSelector(true);
+    } else {
+      setShowStoreSelector(true);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
