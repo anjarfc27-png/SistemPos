@@ -11,12 +11,6 @@ export const Dashboard = () => {
   const { signOut, isAdmin, loading, user } = useAuth();
   const { currentStore } = useStore();
 
-  // Redirect non-admin users directly to POS after login
-  useEffect(() => {
-    if (!loading && !isAdmin) {
-      navigate('/pos', { replace: true });
-    }
-  }, [isAdmin, loading, navigate]);
 
   const handleLogout = async () => {
     try {

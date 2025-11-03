@@ -163,12 +163,8 @@ export const LoginPage = () => {
         }
       }
       
-      // Redirect directly to dashboard/POS based on role
-      if (isAdmin) {
-        navigate('/dashboard');
-      } else {
-        navigate('/pos');
-      }
+      // Redirect langsung ke dashboard untuk semua role
+      navigate('/dashboard');
       
     } catch (error) {
       console.error('Login error:', error);
@@ -216,12 +212,8 @@ export const LoginPage = () => {
       
       setLoadingProgress(100);
       
-      // Redirect directly based on role
-      if (isAdmin) {
-        navigate('/dashboard');
-      } else {
-        navigate('/pos');
-      }
+      // Redirect langsung ke dashboard untuk semua role
+      navigate('/dashboard');
     } catch (error) {
       console.error('Biometric login error:', error);
       setErrors('Login gagal');
@@ -294,12 +286,8 @@ export const LoginPage = () => {
   const handleStoreSelected = (store: Store) => {
     sonnerToast.success(`Toko "${store.name}" aktif!`);
     
-    // Redirect based on user role
-    if (isAdmin) {
-      navigate('/dashboard');
-    } else {
-      navigate('/pos');
-    }
+    // Redirect ke dashboard setelah memilih toko
+    navigate('/dashboard');
   };
 
   // Show store selector only after stores are loaded and there's no store
