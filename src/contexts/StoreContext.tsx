@@ -40,11 +40,17 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setStores(data || []);
       
-      // Set first store as current if none selected
+      // Determine which store to set FIRST before updating state
+      let storeToSet = currentStore;
       if (!currentStore && data && data.length > 0) {
-        setCurrentStore(data[0]);
+        storeToSet = data[0];
+      }
+
+      // Update both stores and currentStore atomically
+      setStores(data || []);
+      if (storeToSet && storeToSet !== currentStore) {
+        setCurrentStore(storeToSet);
       }
     } catch (error) {
       console.error('Error loading stores:', error);

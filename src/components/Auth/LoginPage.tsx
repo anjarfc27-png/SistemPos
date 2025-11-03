@@ -23,7 +23,7 @@ import { BiometryType } from '@aparajita/capacitor-biometric-auth';
 
 export const LoginPage = () => {
   const { signIn, signInWithUsername, signUp, loading, user, biometricLogin, checkBiometricAvailable, enableBiometric, isBiometricEnabled, isAdmin } = useAuth();
-  const { currentStore, stores, loading: storeLoading } = useStore();
+  const { currentStore, stores, loading: storeLoading, setCurrentStore } = useStore();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [adminContacts, setAdminContacts] = useState<{ whatsapp?: string; instagram?: string }>({});
@@ -32,6 +32,7 @@ export const LoginPage = () => {
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometryType, setBiometryType] = useState<BiometryType | null>(null);
   const [showBiometricPrompt, setShowBiometricPrompt] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   
   const [loginData, setLoginData] = useState({
     identifier: '',
@@ -152,32 +153,45 @@ export const LoginPage = () => {
       }
       setErrors(errorMessage);
     } else {
-      // ✅ Login sukses
+      // ✅ Login sukses - set redirecting state
+      setIsRedirecting(true);
       
-      // ✅ Check currentStore DULU untuk prevent flash
-      if (currentStore) {
-        // User sudah punya store aktif → langsung redirect
-        if (isAdmin) {
-          navigate('/dashboard');
+      // ✅ Tunggu sebentar untuk memastikan StoreContext selesai update
+      setTimeout(() => {
+        if (currentStore) {
+          // User sudah punya store aktif → redirect langsung
+          if (isAdmin) {
+            navigate('/dashboard');
+          } else {
+            navigate('/pos');
+          }
+          
+          // Prompt biometric SETELAH redirect
+          if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+            setTimeout(() => setShowBiometricPrompt(true), 500);
+          }
+        } else if (stores.length > 0) {
+          // Stores loaded tapi currentStore belum set → paksa set
+          setCurrentStore(stores[0]);
+          
+          if (isAdmin) {
+            navigate('/dashboard');
+          } else {
+            navigate('/pos');
+          }
+          
+          if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+            setTimeout(() => setShowBiometricPrompt(true), 500);
+          }
         } else {
-          navigate('/pos');
+          // User belum punya store sama sekali
+          if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+            setShowBiometricPrompt(true);
+          } else {
+            setShowStoreSelector(true);
+          }
         }
-        
-        // Prompt biometric SETELAH redirect (akan muncul di page berikutnya)
-        if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
-          setTimeout(() => setShowBiometricPrompt(true), 500);
-        }
-      } else {
-        // User belum punya store aktif
-        
-        // Prompt biometric dulu jika available
-        if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
-          setShowBiometricPrompt(true);
-        } else {
-          // Langsung show store selector jika biometric tidak available/sudah enabled
-          setShowStoreSelector(true);
-        }
-      }
+      }, 150); // 150ms delay untuk StoreContext selesai update
     }
   };
 
@@ -340,6 +354,18 @@ export const LoginPage = () => {
     return null;
   }
 
+  // Loading state saat redirect
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
+          <p className="text-base font-medium text-muted-foreground">Memuat dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Biometric setup prompt
   if (showBiometricPrompt) {
     return (
@@ -439,11 +465,11 @@ export const LoginPage = () => {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        className="absolute right-0 top-0 h-full px-3 hover:bg-primary/10 group transition-all"
                         onClick={handleBiometricLogin}
                         title={`Login dengan ${biometricAuth.getBiometricLabel(biometryType)}`}
                       >
-                        <Fingerprint className="h-5 w-5 text-primary" />
+                        <Fingerprint className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
                       </Button>
                     )}
                   </div>
@@ -473,6 +499,41 @@ export const LoginPage = () => {
                 <Button type="submit" className="w-full h-12 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all" disabled={loading}>
                   {loading ? 'Masuk...' : 'Masuk'}
                 </Button>
+
+                {/* TOMBOL BIOMETRIK STANDALONE */}
+                {biometricEnabled && biometricAvailable && (
+                  <>
+                    {/* Divider "atau" */}
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                          atau
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Tombol Login Biometrik */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-12 text-base rounded-xl font-semibold border-2 hover:bg-primary/5 hover:border-primary transition-all"
+                      onClick={handleBiometricLogin}
+                    >
+                      <Fingerprint className="h-5 w-5 mr-2" />
+                      Login dengan {biometricAuth.getBiometricLabel(biometryType)}
+                    </Button>
+                  </>
+                )}
+
+                {/* Info jika biometrik available tapi belum enabled */}
+                {!biometricEnabled && biometricAvailable && (
+                  <div className="text-center text-sm text-muted-foreground mt-2">
+                    💡 Login dulu untuk mengaktifkan {biometricAuth.getBiometricLabel(biometryType)}
+                  </div>
+                )}
               </form>
             </TabsContent>
             
