@@ -20,7 +20,6 @@ import { secureStorage } from '@/lib/secure-storage';
 import { biometricAuth } from '@/lib/biometric-auth';
 import { Capacitor } from '@capacitor/core';
 import { BiometryType } from '@aparajita/capacitor-biometric-auth';
-import { cn } from "@/lib/utils";
 
 export const LoginPage = () => {
   const { signIn, signInWithUsername, signUp, loading, user, biometricLogin, checkBiometricAvailable, enableBiometric, isBiometricEnabled, isAdmin } = useAuth();
@@ -155,20 +154,29 @@ export const LoginPage = () => {
     } else {
       // ✅ Login sukses
       
-      // ✅ Check if need biometric setup FIRST
-      if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
-        // Show biometric prompt BEFORE redirect
-        setShowBiometricPrompt(true);
-      } else if (currentStore) {
+      // ✅ Check currentStore DULU untuk prevent flash
+      if (currentStore) {
         // User sudah punya store aktif → langsung redirect
         if (isAdmin) {
           navigate('/dashboard');
         } else {
           navigate('/pos');
         }
+        
+        // Prompt biometric SETELAH redirect (akan muncul di page berikutnya)
+        if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+          setTimeout(() => setShowBiometricPrompt(true), 500);
+        }
       } else {
-        // User belum punya store aktif → show store selector
-        setShowStoreSelector(true);
+        // User belum punya store aktif
+        
+        // Prompt biometric dulu jika available
+        if (biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+          setShowBiometricPrompt(true);
+        } else {
+          // Langsung show store selector jika biometric tidak available/sudah enabled
+          setShowStoreSelector(true);
+        }
       }
     }
   };
@@ -315,9 +323,8 @@ export const LoginPage = () => {
     }
   };
 
-  // Only show store selector if explicitly triggered by setShowStoreSelector(true)
-  // Don't auto-show based on user state to prevent flash
-  if (user && !storeLoading && showStoreSelector) {
+  // Show store selector only after stores are loaded and there's no store
+  if (user && !storeLoading && stores.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="w-full max-w-4xl">
@@ -327,19 +334,10 @@ export const LoginPage = () => {
     );
   }
 
-  // If user is logged in but NOT from handleLogin (e.g. page refresh), redirect
-  if (user && !storeLoading && !showStoreSelector) {
-    if (currentStore) {
-      // Has active store → redirect to home
-      navigate('/');
-      return null;
-    } else if (stores.length > 0) {
-      // Has stores but no selection → show selector (one-time only)
-      setShowStoreSelector(true);
-    } else if (stores.length === 0) {
-      // No stores at all → show selector for creation
-      setShowStoreSelector(true);
-    }
+  // If user is logged in and stores are loaded (with or without selection), redirect to main page
+  if (user && !storeLoading && (currentStore || stores.length > 0)) {
+    navigate('/');
+    return null;
   }
 
   // Biometric setup prompt
@@ -435,25 +433,17 @@ export const LoginPage = () => {
                       )}
                     </Button>
 
-                    {/* Biometric Button - Always show if available, disabled if not enabled */}
-                    {biometricAvailable && Capacitor.isNativePlatform() && (
+                    {/* Biometric Button - Small icon in field */}
+                    {biometricEnabled && biometricAvailable && (
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent disabled:opacity-40"
-                        onClick={biometricEnabled ? handleBiometricLogin : undefined}
-                        disabled={!biometricEnabled}
-                        title={
-                          biometricEnabled 
-                            ? `Login dengan ${biometricAuth.getBiometricLabel(biometryType)}`
-                            : 'Login dulu untuk aktifkan biometric'
-                        }
+                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        onClick={handleBiometricLogin}
+                        title={`Login dengan ${biometricAuth.getBiometricLabel(biometryType)}`}
                       >
-                        <Fingerprint className={cn(
-                          "h-5 w-5",
-                          biometricEnabled ? "text-primary" : "text-muted-foreground"
-                        )} />
+                        <Fingerprint className="h-5 w-5 text-primary" />
                       </Button>
                     )}
                   </div>
