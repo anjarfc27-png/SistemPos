@@ -490,7 +490,9 @@ Profit: ${formatPrice(receipt.profit)}
   return (
     <div className="min-h-screen w-full bg-background">
       {/* Header - Fixed with safe area padding for status bar */}
-      <header className="fixed top-0 z-40 border-b bg-card/95 backdrop-blur-xl shadow-sm w-full safe-top">
+      <header className={`fixed top-0 z-40 border-b bg-card/95 backdrop-blur-xl shadow-sm w-full safe-top ${
+        Capacitor.isNativePlatform() ? 'pt-safe' : ''
+      }`}>
         <div className="w-full px-2 sm:px-6 md:px-8 lg:px-12 py-2.5 max-w-[1920px] mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -602,8 +604,8 @@ Profit: ${formatPrice(receipt.profit)}
       {/* Dashboard Stats - with proper spacing from fixed header */}
       <div className={`w-full px-2 sm:px-4 pb-2 sm:pb-4 ${
         Capacitor.isNativePlatform() 
-          ? 'pt-32 sm:pt-36' 
-          : 'pt-20 sm:pt-28 md:pt-32'
+          ? 'pt-28 sm:pt-32' 
+          : 'pt-16 sm:pt-20 md:pt-24'
       }`}>
         <div className="grid grid-cols-1 gap-2 sm:gap-4 mb-4 sm:mb-6">
           {/* Full width card on top */}
@@ -648,29 +650,29 @@ Profit: ${formatPrice(receipt.profit)}
             setCurrentTab(value);
           }
         }} className="w-full">
-          <TabsList className="grid grid-cols-4 sm:flex sm:flex-wrap w-full h-auto p-1 gap-1 sm:justify-start">
-            <TabsTrigger value="pos" className="text-xs px-2 py-2 sm:text-sm sm:px-3 sm:py-3 rounded-md">
+          <TabsList className="grid grid-cols-4 gap-1 p-1 h-auto sm:flex sm:gap-2 sm:justify-start sm:overflow-x-auto md:gap-3 md:p-2">
+            <TabsTrigger value="pos" className="text-xs px-2 py-2 sm:text-sm sm:px-4 sm:py-2.5 sm:whitespace-nowrap md:text-base md:px-6 md:py-3 rounded-md">
               Kasir
             </TabsTrigger>
-            <TabsTrigger value="quick-invoice" className="text-xs px-2 py-2 sm:text-sm sm:px-3 sm:py-3 rounded-md">
+            <TabsTrigger value="quick-invoice" className="text-xs px-2 py-2 sm:text-sm sm:px-4 sm:py-2.5 sm:whitespace-nowrap md:text-base md:px-6 md:py-3 rounded-md">
               Nota Cepat
             </TabsTrigger>
-            <TabsTrigger value="shopping-list" className="text-xs px-2 py-2 sm:text-sm sm:px-3 sm:py-3 rounded-md">
+            <TabsTrigger value="shopping-list" className="text-xs px-2 py-2 sm:text-sm sm:px-4 sm:py-2.5 sm:whitespace-nowrap md:text-base md:px-6 md:py-3 rounded-md">
               Daftar Belanja
             </TabsTrigger>
-            <TabsTrigger value="stock" className="text-xs px-2 py-2 sm:text-sm sm:px-3 sm:py-3 rounded-md">
+            <TabsTrigger value="stock" className="text-xs px-2 py-2 sm:text-sm sm:px-4 sm:py-2.5 sm:whitespace-nowrap md:text-base md:px-6 md:py-3 rounded-md">
               Stok
             </TabsTrigger>
-            <TabsTrigger value="low-stock" className="text-xs px-2 py-2 sm:text-sm sm:px-3 sm:py-3 rounded-md">
+            <TabsTrigger value="low-stock" className="text-xs px-2 py-2 sm:text-sm sm:px-4 sm:py-2.5 sm:whitespace-nowrap md:text-base md:px-6 md:py-3 rounded-md">
               Stok Menipis
             </TabsTrigger>
-            <TabsTrigger value="receipt" className="text-xs px-2 py-2 sm:text-sm sm:px-3 sm:py-3 rounded-md">
+            <TabsTrigger value="receipt" className="text-xs px-2 py-2 sm:text-sm sm:px-4 sm:py-2.5 sm:whitespace-nowrap md:text-base md:px-6 md:py-3 rounded-md">
               Nota
             </TabsTrigger>
-            <TabsTrigger value="reports" className="text-xs px-2 py-2 sm:text-sm sm:px-3 sm:py-3 rounded-md">
+            <TabsTrigger value="reports" className="text-xs px-2 py-2 sm:text-sm sm:px-4 sm:py-2.5 sm:whitespace-nowrap md:text-base md:px-6 md:py-3 rounded-md">
               Laporan
             </TabsTrigger>
-            <TabsTrigger value="admin" className="text-xs px-2 py-2 sm:text-sm sm:px-3 sm:py-3 rounded-md">
+            <TabsTrigger value="admin" className="text-xs px-2 py-2 sm:text-sm sm:px-4 sm:py-2.5 sm:whitespace-nowrap md:text-base md:px-6 md:py-3 rounded-md">
               Admin
             </TabsTrigger>
           </TabsList>

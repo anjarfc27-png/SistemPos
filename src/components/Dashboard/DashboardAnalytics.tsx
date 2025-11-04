@@ -83,13 +83,13 @@ export const DashboardAnalytics = () => {
 
   return (
     <Card className="border shadow-sm bg-card overflow-hidden animate-fade-in">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base sm:text-lg font-semibold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
+      <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-sm sm:text-base md:text-lg font-semibold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
             Analisis Penjualan
           </CardTitle>
           <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-[120px] sm:w-[140px] h-8 sm:h-9 rounded-xl border-2 hover:border-primary transition-colors">
+            <SelectTrigger className="w-[100px] sm:w-[120px] h-7 sm:h-8 md:h-9 rounded-xl border-2 hover:border-primary transition-colors text-xs sm:text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -102,11 +102,11 @@ export const DashboardAnalytics = () => {
           </Select>
         </div>
       </CardHeader>
-      <CardContent className="pt-2">
+      <CardContent className="pt-1 pb-2 px-2 sm:pt-2 sm:pb-3 sm:px-6">
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-emerald-500/5 rounded-lg -z-10" />
-          <p className="text-xs sm:text-sm font-medium mb-3 text-muted-foreground">Pendapatan & Profit</p>
-          <ResponsiveContainer width="100%" height={220}>
+          <p className="text-[10px] sm:text-xs font-medium mb-2 text-muted-foreground">Pendapatan & Profit</p>
+          <ResponsiveContainer width="100%" height={window.innerWidth < 640 ? 160 : 220}>
             <ComposedChart data={analyticsData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -168,15 +168,15 @@ export const DashboardAnalytics = () => {
                 type="monotone" 
                 dataKey="revenue" 
                 stroke="hsl(217 91% 60%)" 
-                strokeWidth={3}
+                strokeWidth={window.innerWidth < 640 ? 2 : 3}
                 dot={timeRange === '1' ? false : { 
-                  r: 4, 
+                  r: window.innerWidth < 640 ? 3 : 4, 
                   strokeWidth: 2, 
                   fill: 'hsl(var(--background))',
                   stroke: 'hsl(217 91% 60%)'
                 }}
                 activeDot={{ 
-                  r: 6,
+                  r: window.innerWidth < 640 ? 4 : 6,
                   strokeWidth: 2,
                   fill: 'hsl(217 91% 60%)',
                   stroke: 'hsl(var(--background))'
@@ -186,15 +186,15 @@ export const DashboardAnalytics = () => {
                 type="monotone" 
                 dataKey="profit" 
                 stroke="hsl(142 76% 36%)" 
-                strokeWidth={3}
+                strokeWidth={window.innerWidth < 640 ? 2 : 3}
                 dot={timeRange === '1' ? false : { 
-                  r: 4, 
+                  r: window.innerWidth < 640 ? 3 : 4, 
                   strokeWidth: 2, 
                   fill: 'hsl(var(--background))',
                   stroke: 'hsl(142 76% 36%)'
                 }}
                 activeDot={{ 
-                  r: 6,
+                  r: window.innerWidth < 640 ? 4 : 6,
                   strokeWidth: 2,
                   fill: 'hsl(142 76% 36%)',
                   stroke: 'hsl(var(--background))'

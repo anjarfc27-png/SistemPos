@@ -3,7 +3,7 @@ import { Receipt } from '@/types/pos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { FileText, TrendingUp, DollarSign, Package, MessageCircle } from 'lucide-react';
+import { FileText, TrendingUp, DollarSign, Package, MessageCircle, ArrowLeft } from 'lucide-react';
 import { format, subDays, subWeeks, subMonths, subYears, startOfDay, endOfDay } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { printA4Report, generateA4PrintContent } from './SalesReportPrint';
@@ -11,6 +11,9 @@ import { useStore } from '@/contexts/StoreContext';
 import { toast } from 'sonner';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 interface SalesReportProps {
   receipts: Receipt[];
@@ -130,7 +133,7 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10; // 10mm margins
+      const margin = 5; // Reduced margin for native
       const contentWidthMm = pageWidth - margin * 2;
       const contentHeightMm = pageHeight - margin * 2;
       
@@ -168,19 +171,45 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       }
       
       const filename = `Laporan-${getPeriodLabel(selectedPeriod)}-${format(new Date(), 'ddMMyyyy')}.pdf`;
-      pdf.save(filename);
       
-      // Open WhatsApp message prompt
-      const whatsappNumber = (currentStore as any)?.whatsapp_report_number || (currentStore as any)?.whatsapp_number || '';
-      if (whatsappNumber) {
-        const message = `📊 *LAPORAN PENJUALAN*\n${currentStore?.name || 'Toko'}\n\n📅 Periode: ${getPeriodLabel(selectedPeriod)}\n${format(start, 'dd MMM yyyy', { locale: id })} - ${format(end, 'dd MMM yyyy', { locale: id })}\n\n💰 Total Penjualan: ${formatPrice(stats.totalSales)}\n📈 Total Profit: ${formatPrice(stats.totalProfit)}\n🧾 Transaksi: ${stats.totalTransactions}\n📦 Barang Terjual: ${stats.totalItems}\n\n_File PDF telah didownload. Silakan kirim file tersebut melalui chat ini._`;
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
-        window.open(whatsappUrl, '_blank');
-        toast.success('PDF telah didownload!', { description: 'Kirim file PDF melalui WhatsApp yang sudah terbuka' });
+      // Native platform: Save to filesystem and share
+      if (Capacitor.isNativePlatform()) {
+        const pdfBase64 = pdf.output('datauristring').split(',')[1];
+        
+        const savedFile = await Filesystem.writeFile({
+          path: filename,
+          data: pdfBase64,
+          directory: Directory.Cache,
+        });
+        
+        // Share the file
+        const canShare = await Share.canShare();
+        if (canShare.value) {
+          await Share.share({
+            title: 'Laporan Penjualan',
+            text: `📊 LAPORAN PENJUALAN\n${currentStore?.name || 'Toko'}\n\nPeriode: ${getPeriodLabel(selectedPeriod)}\n${format(start, 'dd MMM yyyy', { locale: id })} - ${format(end, 'dd MMM yyyy', { locale: id })}\n\nTotal Penjualan: ${formatPrice(stats.totalSales)}\nTotal Profit: ${formatPrice(stats.totalProfit)}\nTransaksi: ${stats.totalTransactions}\nBarang Terjual: ${stats.totalItems}`,
+            files: [savedFile.uri],
+          });
+          toast.success('PDF berhasil dibuat dan dibagikan!');
+        } else {
+          toast.success('PDF berhasil disimpan!');
+        }
       } else {
-        toast.success('PDF berhasil didownload!');
-        toast.info('Atur nomor WhatsApp di Pengaturan Toko untuk mengirim langsung');
+        // Web: Download PDF
+        pdf.save(filename);
+        
+        // Open WhatsApp message prompt
+        const whatsappNumber = (currentStore as any)?.whatsapp_report_number || (currentStore as any)?.whatsapp_number || '';
+        if (whatsappNumber) {
+          const message = `📊 *LAPORAN PENJUALAN*\n${currentStore?.name || 'Toko'}\n\n📅 Periode: ${getPeriodLabel(selectedPeriod)}\n${format(start, 'dd MMM yyyy', { locale: id })} - ${format(end, 'dd MMM yyyy', { locale: id })}\n\n💰 Total Penjualan: ${formatPrice(stats.totalSales)}\n📈 Total Profit: ${formatPrice(stats.totalProfit)}\n🧾 Transaksi: ${stats.totalTransactions}\n📦 Barang Terjual: ${stats.totalItems}\n\n_File PDF telah didownload. Silakan kirim file tersebut melalui chat ini._`;
+          const encodedMessage = encodeURIComponent(message);
+          const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
+          window.open(whatsappUrl, '_blank');
+          toast.success('PDF telah didownload!', { description: 'Kirim file PDF melalui WhatsApp yang sudah terbuka' });
+        } else {
+          toast.success('PDF berhasil didownload!');
+          toast.info('Atur nomor WhatsApp di Pengaturan Toko untuk mengirim langsung');
+        }
       }
       
     } catch (error) {
@@ -191,9 +220,9 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-4 ${Capacitor.isNativePlatform() ? 'space-y-3 px-2' : 'space-y-6 px-0'}`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h2 className="text-xl sm:text-2xl font-bold">Laporan Penjualan</h2>
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Laporan Penjualan</h2>
         <div className="flex flex-col sm:flex-row gap-2">
           <Button onClick={handlePrint} variant="outline" className="w-full sm:w-auto">
             <FileText className="w-4 h-4 mr-2" />
@@ -218,48 +247,48 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-2 gap-2 ${Capacitor.isNativePlatform() ? '' : 'md:grid-cols-4 md:gap-4'}`}>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Penjualan</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${Capacitor.isNativePlatform() ? 'pb-1 pt-2 px-3' : 'pb-2'}`}>
+            <CardTitle className={`${Capacitor.isNativePlatform() ? 'text-xs' : 'text-sm'} font-medium`}>Total Penjualan</CardTitle>
+            <DollarSign className={`${Capacitor.isNativePlatform() ? 'h-3 w-3' : 'h-4 w-4'} text-muted-foreground`} />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">{formatPrice(stats.totalSales)}</div>
-            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
+          <CardContent className={Capacitor.isNativePlatform() ? 'pb-2 px-3' : ''}>
+            <div className={`${Capacitor.isNativePlatform() ? 'text-base' : 'text-2xl'} font-bold text-primary`}>{formatPrice(stats.totalSales)}</div>
+            <p className={`${Capacitor.isNativePlatform() ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}>{getPeriodLabel(selectedPeriod)}</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Keuntungan</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${Capacitor.isNativePlatform() ? 'pb-1 pt-2 px-3' : 'pb-2'}`}>
+            <CardTitle className={`${Capacitor.isNativePlatform() ? 'text-xs' : 'text-sm'} font-medium`}>Total Keuntungan</CardTitle>
+            <TrendingUp className={`${Capacitor.isNativePlatform() ? 'h-3 w-3' : 'h-4 w-4'} text-muted-foreground`} />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">{formatPrice(stats.totalProfit)}</div>
-            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
+          <CardContent className={Capacitor.isNativePlatform() ? 'pb-2 px-3' : ''}>
+            <div className={`${Capacitor.isNativePlatform() ? 'text-base' : 'text-2xl'} font-bold text-success`}>{formatPrice(stats.totalProfit)}</div>
+            <p className={`${Capacitor.isNativePlatform() ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}>{getPeriodLabel(selectedPeriod)}</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Transaksi</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${Capacitor.isNativePlatform() ? 'pb-1 pt-2 px-3' : 'pb-2'}`}>
+            <CardTitle className={`${Capacitor.isNativePlatform() ? 'text-xs' : 'text-sm'} font-medium`}>Total Transaksi</CardTitle>
+            <FileText className={`${Capacitor.isNativePlatform() ? 'h-3 w-3' : 'h-4 w-4'} text-muted-foreground`} />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalTransactions}</div>
-            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
+          <CardContent className={Capacitor.isNativePlatform() ? 'pb-2 px-3' : ''}>
+            <div className={`${Capacitor.isNativePlatform() ? 'text-base' : 'text-2xl'} font-bold`}>{stats.totalTransactions}</div>
+            <p className={`${Capacitor.isNativePlatform() ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}>{getPeriodLabel(selectedPeriod)}</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Item</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${Capacitor.isNativePlatform() ? 'pb-1 pt-2 px-3' : 'pb-2'}`}>
+            <CardTitle className={`${Capacitor.isNativePlatform() ? 'text-xs' : 'text-sm'} font-medium`}>Total Item</CardTitle>
+            <Package className={`${Capacitor.isNativePlatform() ? 'h-3 w-3' : 'h-4 w-4'} text-muted-foreground`} />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalItems}</div>
-            <p className="text-xs text-muted-foreground">{getPeriodLabel(selectedPeriod)}</p>
+          <CardContent className={Capacitor.isNativePlatform() ? 'pb-2 px-3' : ''}>
+            <div className={`${Capacitor.isNativePlatform() ? 'text-base' : 'text-2xl'} font-bold`}>{stats.totalItems}</div>
+            <p className={`${Capacitor.isNativePlatform() ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}>{getPeriodLabel(selectedPeriod)}</p>
           </CardContent>
         </Card>
       </div>
@@ -277,39 +306,42 @@ export const SalesReport = ({ receipts, formatPrice }: SalesReportProps) => {
       )}
 
       <Card>
-        <CardHeader>
-          <CardTitle>Detail Transaksi</CardTitle>
+        <CardHeader className={Capacitor.isNativePlatform() ? 'pb-2 pt-3 px-3' : ''}>
+          <CardTitle className={Capacitor.isNativePlatform() ? 'text-base' : 'text-lg'}>Detail Transaksi</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4 max-h-96 overflow-y-auto">
+        <CardContent className={Capacitor.isNativePlatform() ? 'px-3 pb-3' : ''}>
+          <div className={`space-y-3 ${Capacitor.isNativePlatform() ? 'max-h-64' : 'max-h-96'} overflow-y-auto`}>
             {filteredReceipts.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
+              <p className={`text-center text-muted-foreground ${Capacitor.isNativePlatform() ? 'py-4 text-sm' : 'py-8'}`}>
                 Tidak ada transaksi dalam periode {getPeriodLabel(selectedPeriod).toLowerCase()}
               </p>
             ) : (
               filteredReceipts.map(receipt => (
-                <div key={receipt.id} className="border rounded-lg p-4">
+                <div key={receipt.id} className={`border rounded-lg ${Capacitor.isNativePlatform() ? 'p-2' : 'p-4'}`}>
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <p className="font-medium">{receipt.id}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className={`font-medium ${Capacitor.isNativePlatform() ? 'text-xs' : 'text-sm'}`}>{receipt.id}</p>
+                      <p className={`${Capacitor.isNativePlatform() ? 'text-[10px]' : 'text-sm'} text-muted-foreground`}>
                         {format(new Date(receipt.timestamp), 'dd MMM yyyy, HH:mm', { locale: id })}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold">{formatPrice(receipt.total)}</p>
-                      <p className="text-sm text-success">+{formatPrice(receipt.profit)}</p>
+                      <p className={`font-bold ${Capacitor.isNativePlatform() ? 'text-sm' : 'text-base'}`}>{formatPrice(receipt.total)}</p>
+                      <p className={`${Capacitor.isNativePlatform() ? 'text-[10px]' : 'text-sm'} text-success`}>+{formatPrice(receipt.profit)}</p>
                     </div>
                   </div>
                   <div className="space-y-1">
-                    {receipt.items.map((item, index) => (
-                      <div key={index} className="flex justify-between text-sm">
-                        <span>{item.product.name} x{item.quantity}</span>
-                        <span>{formatPrice((item.finalPrice || item.product.sellPrice) * item.quantity)}</span>
+                    {receipt.items.slice(0, Capacitor.isNativePlatform() ? 2 : undefined).map((item, index) => (
+                      <div key={index} className={`flex justify-between ${Capacitor.isNativePlatform() ? 'text-xs' : 'text-sm'}`}>
+                        <span className="truncate flex-1">{item.product.name} x{item.quantity}</span>
+                        <span className="ml-2">{formatPrice((item.finalPrice || item.product.sellPrice) * item.quantity)}</span>
                       </div>
                     ))}
+                    {Capacitor.isNativePlatform() && receipt.items.length > 2 && (
+                      <div className="text-[10px] text-muted-foreground">+{receipt.items.length - 2} item lagi</div>
+                    )}
                     {receipt.discount > 0 && (
-                      <div className="flex justify-between text-sm text-destructive">
+                      <div className={`flex justify-between ${Capacitor.isNativePlatform() ? 'text-xs' : 'text-sm'} text-destructive`}>
                         <span>Diskon</span>
                         <span>-{formatPrice(receipt.discount)}</span>
                       </div>

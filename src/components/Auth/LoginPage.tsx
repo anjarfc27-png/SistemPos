@@ -152,19 +152,36 @@ export const LoginPage = () => {
         return;
       }
       
-      setLoadingProgress(100);
+      setLoadingProgress(50);
       
-      // Save credentials for biometric if available
-      if (biometricAvailable && Capacitor.isNativePlatform()) {
-        await secureStorage.saveCredentials(loginData.identifier, loginData.password);
-        if (!biometricEnabled) {
-          await enableBiometric(loginData.identifier, loginData.password);
+      // Auto-enable biometric on first login if "Remember Me" is checked
+      if (rememberMe && biometricAvailable && !biometricEnabled && Capacitor.isNativePlatform()) {
+        try {
+          await secureStorage.setBiometricEnabled(true);
+          await secureStorage.saveCredentials(loginData.identifier, loginData.password);
+          await secureStorage.setSavedIdentifier(loginData.identifier);
+          await secureStorage.setRememberMe(true);
           setBiometricEnabled(true);
+          sonnerToast.success('Biometrik diaktifkan untuk login cepat!');
+        } catch (bioError) {
+          console.error('Biometric setup error:', bioError);
         }
+      } else if (rememberMe && biometricEnabled) {
+        // Update saved credentials
+        await secureStorage.saveCredentials(loginData.identifier, loginData.password);
+        await secureStorage.setSavedIdentifier(loginData.identifier);
+        await secureStorage.setRememberMe(true);
+      } else if (rememberMe && !biometricAvailable) {
+        // Just save identifier if biometric not available
+        await secureStorage.setSavedIdentifier(loginData.identifier);
+        await secureStorage.setRememberMe(true);
       }
       
-      // Redirect langsung ke dashboard untuk semua role
-      navigate('/dashboard');
+      setLoadingProgress(100);
+      
+      // Force page reload to ensure session is loaded
+      await new Promise(resolve => setTimeout(resolve, 100));
+      window.location.href = '/dashboard';
       
     } catch (error) {
       console.error('Login error:', error);
@@ -338,32 +355,15 @@ export const LoginPage = () => {
               <form onSubmit={handleLogin} className="space-y-5">
                 <div>
                   <Label htmlFor="identifier" className="text-sm font-semibold">Email atau Username</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Input
-                      id="identifier"
-                      type="text"
-                      placeholder="Masukkan email atau username"
-                      value={loginData.identifier}
-                      onChange={(e) => setLoginData(prev => ({ ...prev, identifier: e.target.value }))}
-                      required
-                      className="h-12 rounded-xl border-2 focus:border-primary transition-all flex-1"
-                    />
-                    
-                    {/* Biometric Button - Separate box next to input */}
-                    {biometricAvailable && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={handleBiometricLogin}
-                        disabled={loading}
-                        className="h-12 w-12 rounded-xl border-2 hover:bg-primary/10 transition-all flex-shrink-0"
-                        title="Login dengan biometrik"
-                      >
-                        <Fingerprint className="h-6 w-6" />
-                      </Button>
-                    )}
-                  </div>
+                  <Input
+                    id="identifier"
+                    type="text"
+                    placeholder="Masukkan email atau username"
+                    value={loginData.identifier}
+                    onChange={(e) => setLoginData(prev => ({ ...prev, identifier: e.target.value }))}
+                    required
+                    className="h-12 rounded-xl border-2 focus:border-primary transition-all mt-2"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
@@ -415,9 +415,29 @@ export const LoginPage = () => {
                   </div>
                 )}
                 
-                <Button type="submit" className="w-full h-12 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all" disabled={loading}>
-                  {loading ? 'Masuk...' : 'Masuk'}
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    type="submit" 
+                    className="flex-1 h-12 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl transition-all" 
+                    disabled={loading}
+                  >
+                    {loading ? 'Masuk...' : 'Masuk'}
+                  </Button>
+                  
+                  {biometricEnabled && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={handleBiometricLogin}
+                      className="h-12 w-12 rounded-xl border-2 hover:bg-primary/10"
+                      title="Login dengan biometrik"
+                      disabled={loading}
+                    >
+                      <Fingerprint className="h-5 w-5 text-primary" />
+                    </Button>
+                  )}
+                </div>
               </form>
             </TabsContent>
             
